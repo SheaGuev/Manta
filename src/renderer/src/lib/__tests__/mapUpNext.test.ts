@@ -3,7 +3,7 @@ import type { MapDetail, MapLaunch, MapMilestoneInfo, MapTicket, PullRequestInfo
 import { homeUpNext, needsReview, ticketUpNext } from '../mapUpNext'
 
 function ticket(id: string, status: MapTicket['status'] = 'todo', extra: Partial<MapTicket> = {}): MapTicket {
-  return { id, number: 1, title: `T${id}`, description: '', acceptance: [], constraints: [], after: [], docs: [], project: null, status, blocked: null, ...extra }
+  return { id, number: 1, title: `T${id}`, description: '', acceptance: [], constraints: [], after: [], docs: [], project: null, status, blocked: null, cancelled: null, ...extra }
 }
 
 function milestone(id: string, tickets: MapTicket[], status: MapMilestoneInfo['status'] = 'todo'): MapMilestoneInfo {

@@ -1,4 +1,5 @@
 import type { MapDecision, MapDetail, MapDocInfo, MapDocProposal, MapEventKind, MapLaunch, MapTicket, TerminalInfo } from '../../../shared/ipc'
+import { isClosed } from '../../../shared/ipc'
 import { eventSentence, sinceSummary } from './mapActivity'
 import { mapBoardRows } from './mapBoard'
 import { authorLabel, decisionNumber, launchTitle, ticketLaunches } from './mapStatus'
@@ -38,11 +39,11 @@ const allTickets = (map: Pick<MapDetail, 'milestones'>): MapTicket[] => map.mile
 
 /** Tickets not done waiting on any of these. */
 function waitingFor(map: Pick<MapDetail, 'milestones'>, ids: readonly string[]): number {
-  return allTickets(map).filter((t) => t.status !== 'done' && t.after.some((a) => ids.includes(a))).length
+  return allTickets(map).filter((t) => !isClosed(t.status) && t.after.some((a) => ids.includes(a))).length
 }
 
 function decisionItem(map: MapDetail, decision: MapDecision): AttentionItem {
-  const open = allTickets(map).filter((t) => decision.blocks.includes(t.id) && t.status !== 'done')
+  const open = allTickets(map).filter((t) => decision.blocks.includes(t.id) && !isClosed(t.status))
   return {
     key: `decision:${decision.id}`,
     title: decision.title,
@@ -131,7 +132,7 @@ export function attentionItems(map: MapDetail, terminals: readonly TerminalInfo[
     if (!launch) continue
     items.push({ key: `session:${row.launch}:${row.ticket ?? ''}`, title: row.title, detail: row.attention, verb: 'Answer', tone: 'you', rank: 0, blocks: row.unblocks, target: { kind: 'session', launch, terminal: row.terminal } })
   }
-  for (const ticket of allTickets(map).filter((t) => t.status !== 'done')) {
+  for (const ticket of allTickets(map).filter((t) => !isClosed(t.status))) {
     const item = reviewItem(map, ticket)
     if (item) items.push(item)
   }
@@ -198,7 +199,7 @@ function fromItem(map: MapDetail, item: AttentionItem, others: number): Recommen
   switch (item.target.kind) {
     case 'decision': {
       const decision = item.target.decision
-      const held = allTickets(map).filter((t) => decision.blocks.includes(t.id) && t.status !== 'done')
+      const held = allTickets(map).filter((t) => decision.blocks.includes(t.id) && !isClosed(t.status))
       const why = held.length > 0 ? `Unblocks ${titles(held)}.` : decision.question.trim() || 'An open question the work is waiting on.'
       return { ...base, title: decision.title, why, actor: 'you', button: 'Review decision', reason: blocking }
     }

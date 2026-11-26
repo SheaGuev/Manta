@@ -124,7 +124,7 @@ describe('WorkspaceMaps', () => {
     expect((await ws.maps.get(id)).lastVisitedAt).toBe(earlier)
   })
 
-  it('asks before removing a ticket that has launches or a milestone with tickets, and unpins and untags a removed milestone', async () => {
+  it('always asks before deleting a ticket, asks before deleting a milestone with tickets, and unpins and untags a deleted milestone', async () => {
     const { ws } = await setup()
     const id = await created(ws)
     await ws.maps.editTracker(id, { kind: 'add-milestone', title: 'Tracker' })
@@ -133,10 +133,13 @@ describe('WorkspaceMaps', () => {
     await ws.maps.editDocs(id, { kind: 'add-doc', path: 'docs/auth.md', milestones: [milestone], section: null })
     await ws.maps.update(id, { pinned: milestone })
     const questions: string[] = []
+    const ticket = (await ws.maps.get(id)).milestones[0]?.tickets[0]?.id ?? ''
 
+    expect(await ws.maps.removeFromTracker(id, { ticket }, async (q) => (questions.push(q), false))).toBeNull()
+    expect((await ws.maps.get(id)).milestones[0]?.tickets).toHaveLength(1)
     expect(await ws.maps.removeFromTracker(id, { milestone }, async (q) => (questions.push(q), false))).toBeNull()
     expect(await ws.maps.removeFromTracker(id, { milestone }, async () => true)).toMatchObject({ ok: true })
-    expect(questions).toEqual(['Remove the milestone “Tracker” and its 1 tickets?'])
+    expect(questions).toEqual(['Delete the ticket “Data model”? It can\'t be brought back; cancel it instead to keep it on the map.', 'Delete the milestone “Tracker” and its 1 tickets?'])
     const detail = await ws.maps.get(id)
     expect(detail).toMatchObject({ milestones: [], pinned: null, docs: [{ path: 'docs/auth.md', milestones: [] }] })
   })

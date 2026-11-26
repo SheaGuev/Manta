@@ -1,4 +1,5 @@
 import type { MapDetail, MapEvent, MapEventKind, TerminalInfo } from '../../../shared/ipc'
+import { isClosed } from '../../../shared/ipc'
 import { decisionNumber, milestoneKey } from './mapStatus'
 
 export type ActivityFilter = 'all' | 'agents' | 'docs' | 'decisions' | 'milestones'
@@ -14,6 +15,7 @@ const CATEGORY: Record<MapEventKind, Exclude<ActivityFilter, 'all'>> = {
   'ticket-done': 'milestones',
   'ticket-blocked': 'milestones',
   'ticket-in-review': 'milestones',
+  'ticket-cancelled': 'milestones',
   'milestone-done': 'milestones',
   'decision-raised': 'decisions',
   'decision-decided': 'decisions',
@@ -35,6 +37,7 @@ export const KIND_LABEL: Record<MapEventKind, string> = {
   'ticket-done': 'Ticket done',
   'ticket-blocked': 'Blocked',
   'ticket-in-review': 'In review',
+  'ticket-cancelled': 'Cancelled',
   'milestone-done': 'Milestone done',
   'decision-raised': 'Decision needed',
   'decision-decided': 'Decided',
@@ -63,7 +66,7 @@ export function needsAction(event: MapEvent, map: MapDetail, terminals: readonly
     case 'decision-reopened':
       return map.decisions.some((d) => d.id === event.decision && d.status === 'open')
     case 'agent-finished':
-      return launch !== undefined && !launch.landed && (ticket ? ticket.status !== 'done' : true)
+      return launch !== undefined && !launch.landed && (ticket ? !isClosed(ticket.status) : true)
     case 'pr-opened':
       return launch?.pr?.state === 'open' && !launch.landed
     case 'agent-started':
@@ -175,7 +178,7 @@ export function sinceSummary(map: Pick<MapDetail, 'activity' | 'lastVisitedAt' |
   const marks = [map.lastVisitedAt, map.seenAt].filter((at): at is string => at !== null).sort()
   const since = marks.at(-1) ?? null
   const fresh = since === null ? [...map.activity] : map.activity.filter((e) => e.at > since)
-  const openTickets = new Set(map.milestones.flatMap((m) => m.tickets).filter((t) => t.status !== 'done').map((t) => t.id))
+  const openTickets = new Set(map.milestones.flatMap((m) => m.tickets).filter((t) => !isClosed(t.status)).map((t) => t.id))
   const blocking = (id: string | null): boolean => map.decisions.some((d) => d.id === id && d.status === 'open' && d.blocks.some((t) => openTickets.has(t)))
   return {
     since,
@@ -215,6 +218,8 @@ export function eventSentence(event: MapEvent, map: Pick<MapDetail, 'decisions'>
       return `${event.title} blocked`
     case 'ticket-in-review':
       return `${event.title} in review`
+    case 'ticket-cancelled':
+      return `${event.title} cancelled`
     case 'milestone-done':
       return `${event.title} done`
     case 'doc-change-proposed':

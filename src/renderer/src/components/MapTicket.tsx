@@ -1,4 +1,4 @@
-import { Bot, Check, Circle, ExternalLink, FileText, GitBranch, Plus, X } from 'lucide-react'
+import { Bot, Check, Circle, ExternalLink, FileText, GitBranch, Plus, Trash2, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Streamdown } from 'streamdown'
 import 'streamdown/styles.css'
@@ -8,13 +8,13 @@ import { milestoneKey, ticketKey, ticketLaunches } from '../lib/mapStatus'
 import { docName, STATUS_LABEL, ticketUpNext } from '../lib/mapUpNext'
 import { stateLabel } from '../lib/terminalStatus'
 import { MarkdownField } from './MarkdownField'
-import { ClampedText, StatusDot, UpNextBlock } from './MapParts'
+import { CancelTicketForm, ClampedText, StatusDot, UpNextBlock } from './MapParts'
 import type { MapActions } from './MapView'
 import { MultiSelect } from './MultiSelect'
 import { LINK_SAFETY } from './ThreadView'
 
 const api = window.manta
-const STATUSES: readonly TicketStatus[] = ['todo', 'in-progress', 'blocked', 'in-review', 'done']
+const STATUSES: readonly TicketStatus[] = ['todo', 'in-progress', 'blocked', 'in-review', 'done', 'cancelled']
 
 /**
  * One ticket: its title, milestone, status, description, acceptance criteria (with how the last
@@ -27,6 +27,11 @@ export function MapTicketView({ map, ticket, actions, busy, codeProjects }: { ma
   const results = latestCriteria(launches, ticket.id)
   const others = map.milestones.flatMap((m) => m.tickets.filter((t) => t.id !== ticket.id).map((t) => ({ id: t.id, key: ticketKey(map, t), label: t.title, group: `${milestoneKey(map, m)} · ${m.title}` })))
   const unlinked = map.docs.filter((d) => !ticket.docs.some((linked) => linked.path === d.path && linked.heading === null)).map((d) => ({ id: d.path, label: d.title }))
+  const [cancelling, setCancelling] = useState(false)
+  const remove = (): void =>
+    void actions.remove({ ticket: ticket.id }).then((deleted) => {
+      if (deleted) actions.openScreen('milestones')
+    })
   const update = (patch: Omit<Extract<TrackerEdit, { kind: 'update-ticket' }>, 'kind' | 'ticket'>): void => void actions.edit({ kind: 'update-ticket', ticket: ticket.id, ...patch })
 
   return (
@@ -46,6 +51,7 @@ export function MapTicketView({ map, ticket, actions, busy, codeProjects }: { ma
           <div className="map-tk-main">
             <TitleField key={ticket.id} title={ticket.title} onSave={(title) => update({ title })} />
             {ticket.blocked && <div className="thread-notice error">Blocked: {ticket.blocked}</div>}
+            {ticket.status === 'cancelled' && <div className="map-tk-cancelled">Cancelled{ticket.cancelled ? `: ${ticket.cancelled}` : ''}</div>}
             <UpNextBlock next={ticketUpNext(map, ticket, actions.terminals)} busy={busy} onAct={actions.act} />
 
             <section className="map-tk-section">
@@ -81,7 +87,8 @@ export function MapTicketView({ map, ticket, actions, busy, codeProjects }: { ma
                   title="Set by hand; the next real event (a launch, a report, a pull request) changes it again"
                   onChange={(e) => {
                     const status = STATUSES.find((s) => s === e.target.value)
-                    if (status) void actions.edit({ kind: 'set-ticket-status', ticket: ticket.id, status })
+                    if (status === 'cancelled') setCancelling(true)
+                    else if (status) void actions.edit({ kind: 'set-ticket-status', ticket: ticket.id, status })
                   }}
                 >
                   {STATUSES.map((s) => (
@@ -91,7 +98,19 @@ export function MapTicketView({ map, ticket, actions, busy, codeProjects }: { ma
                   ))}
                 </select>
               </label>
+              {cancelling && (
+                <CancelTicketForm
+                  title={ticket.title}
+                  onCancel={(reason) => void actions.edit({ kind: 'set-ticket-status', ticket: ticket.id, status: 'cancelled', reason })}
+                  onClose={() => setCancelling(false)}
+                />
+              )}
             </Property>
+            {ticket.status === 'cancelled' && (
+              <Property label="Why it was cancelled">
+                <ReasonField key={ticket.id} reason={ticket.cancelled ?? ''} onSave={(reason) => void actions.edit({ kind: 'set-ticket-status', ticket: ticket.id, status: 'cancelled', reason })} />
+              </Property>
+            )}
             <Property label="Waits for">
               <MultiSelect options={others} value={ticket.after} onChange={(after) => update({ after })} placeholder="Nothing" />
             </Property>
@@ -127,6 +146,9 @@ export function MapTicketView({ map, ticket, actions, busy, codeProjects }: { ma
                 </select>
               </Property>
             )}
+            <button className="map-link map-tk-delete" onClick={remove}>
+              <Trash2 size={11} /> Delete ticket…
+            </button>
           </aside>
         </div>
       </div>
@@ -140,6 +162,24 @@ function Property({ label, children }: { label: string; children: React.ReactNod
       <span className="map-tk-property-label">{label}</span>
       {children}
     </div>
+  )
+}
+
+/** A cancelled ticket's reason, typed into in place and saved on a click away or Enter. */
+function ReasonField({ reason, onSave }: { reason: string; onSave: (reason: string) => void }): React.JSX.Element {
+  const [draft, setDraft] = useState(reason)
+  useEffect(() => {
+    setDraft(reason)
+  }, [reason])
+  return (
+    <input
+      className="map-select-field"
+      value={draft}
+      placeholder="No reason given"
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={() => draft.trim() !== reason && onSave(draft.trim())}
+      onKeyDown={(e) => e.key === 'Enter' && e.currentTarget.blur()}
+    />
   )
 }
 

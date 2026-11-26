@@ -326,8 +326,21 @@ export type ImplementationStart = { ok: true; message: string; thread: ThreadInf
 /** How the tracker's work gets its worktrees: one per ticket, or one per milestone shared by its tickets. */
 export type LaunchMode = 'ticket' | 'milestone'
 
-/** `in-review`: a pull request of its own is open. `done`: its work is merged and verified, reported by its agent with the user or set by hand. */
-export type TicketStatus = 'todo' | 'in-progress' | 'blocked' | 'in-review' | 'done'
+/**
+ * `in-review`: a pull request of its own is open. `done`: its work is merged and verified, reported by
+ * its agent with the user or set by hand. `cancelled`: dropped by the user, with an optional reason.
+ */
+export type TicketStatus = 'todo' | 'in-progress' | 'blocked' | 'in-review' | 'done' | 'cancelled'
+
+/** Done or cancelled: no work left, nothing waits on it, and it doesn't hold its milestone open. */
+export function isClosed(status: TicketStatus): boolean {
+  return status === 'done' || status === 'cancelled'
+}
+
+/** "6 of 13 done": cancelled tickets leave the count instead of counting as done. */
+export function ticketProgress(tickets: readonly { status: TicketStatus }[]): { done: number; total: number } {
+  return { done: tickets.filter((t) => t.status === 'done').length, total: tickets.filter((t) => t.status !== 'cancelled').length }
+}
 
 export type MilestoneStatus = 'todo' | 'in-progress' | 'done'
 
@@ -358,6 +371,8 @@ export interface MapTicket {
   status: TicketStatus
   /** Why it's blocked, as the agent reported it; null unless blocked. */
   blocked: string | null
+  /** Why the user cancelled it; null unless cancelled, or when no reason was given. */
+  cancelled: string | null
 }
 
 /** One item of a milestone's definition of done, ticked by the user once it holds. */
@@ -666,6 +681,7 @@ export type MapEventKind =
   | 'ticket-done'
   | 'ticket-blocked'
   | 'ticket-in-review'
+  | 'ticket-cancelled'
   | 'milestone-done'
   | 'decision-raised'
   | 'decision-decided'

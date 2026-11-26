@@ -43,6 +43,7 @@ import type {
   TicketStatus,
   TrackerEdit
 } from '../../shared/ipc'
+import { isClosed } from '../../shared/ipc'
 import { MANTA_DIR } from '../threads/threadRecords'
 import { parseMapAuthor } from '../threads/threads'
 
@@ -86,7 +87,7 @@ export interface Tracker {
 
 export const EMPTY_TRACKER: Tracker = { milestones: [], decisions: [], nextTicket: 1, nextDecision: 1 }
 
-export const TICKET_STATUSES: readonly TicketStatus[] = ['todo', 'in-progress', 'blocked', 'in-review', 'done']
+export const TICKET_STATUSES: readonly TicketStatus[] = ['todo', 'in-progress', 'blocked', 'in-review', 'done', 'cancelled']
 export const MILESTONE_STATUSES: readonly MilestoneStatus[] = ['todo', 'in-progress', 'done']
 export const LAUNCH_MODES: readonly LaunchMode[] = ['ticket', 'milestone']
 export const CONFIRM_MODES: readonly ConfirmProposals[] = ['ask', 'queue']
@@ -190,8 +191,8 @@ export function mapStage(map: Pick<MapFile, 'stage'>, tracker: Tracker, launches
   if (map.stage) return map.stage
   const tickets = tracker.milestones.flatMap((m) => m.tickets)
   if (tickets.length === 0 || (launches.length === 0 && tickets.every((t) => t.status === 'todo'))) return 'planning'
-  if (tickets.every((t) => t.status === 'done')) return 'shipped'
-  if (tickets.every((t) => t.status === 'done' || t.status === 'in-review')) return 'validating'
+  if (tickets.every((t) => isClosed(t.status))) return 'shipped'
+  if (tickets.every((t) => isClosed(t.status) || t.status === 'in-review')) return 'validating'
   return 'building'
 }
 
@@ -246,7 +247,8 @@ function parseTicket(value: unknown): MapTicket | null {
     docs,
     project: strOrNull(value.project),
     status,
-    blocked: status === 'blocked' ? strOrNull(value.blocked) : null
+    blocked: status === 'blocked' ? strOrNull(value.blocked) : null,
+    cancelled: status === 'cancelled' ? strOrNull(value.cancelled) : null
   }
 }
 
@@ -537,7 +539,7 @@ export function milestoneStatus(milestone: MapMilestone, launches: readonly MapL
   const tickets = milestone.tickets
   const ticketIds = new Set(tickets.map((t) => t.id))
   const started = own.length > 0 || launches.some((launch) => !('milestone' in launch.scope) && scopeTicketIds(launch.scope).some((id) => ticketIds.has(id)))
-  if (tickets.length > 0 && tickets.every((ticket) => ticket.status === 'done')) return 'done'
+  if (tickets.length > 0 && tickets.every((ticket) => isClosed(ticket.status))) return 'done'
   return started || tickets.some((ticket) => ticket.status !== 'todo') ? 'in-progress' : 'todo'
 }
 
@@ -586,9 +588,9 @@ export function scopeMilestone(tracker: Tracker, scope: LaunchScope): MapMilesto
   return first ? (findTicket(tracker, first)?.milestone ?? null) : null
 }
 
-/** The tickets this one waits for that aren't done yet. */
+/** The tickets this one waits for that aren't done yet; a cancelled one no longer holds it back. */
 export function waitingOn(tracker: Tracker, ticket: MapTicket): MapTicket[] {
-  return ticket.after.flatMap((id) => findTicket(tracker, id)?.ticket ?? []).filter((t) => t.status !== 'done')
+  return ticket.after.flatMap((id) => findTicket(tracker, id)?.ticket ?? []).filter((t) => !isClosed(t.status))
 }
 
 /** Open decisions that hold this ticket back. */
@@ -639,7 +641,8 @@ export function pullRequestHealth(pr: Pick<PullRequestDetail, 'checks' | 'commen
 
 /**
  * Sets the statuses of tickets, and clears the hand-set status of the milestones they're in: a real
- * event replaces a manual status. `keepDone` leaves done tickets as they are.
+ * event replaces a manual status. `keepDone` leaves done and cancelled tickets as they are. A reason
+ * goes with blocked (required, defaulted) and cancelled (optional).
  */
 export function setTicketStatuses(tracker: Tracker, ids: readonly string[], status: TicketStatus, options: { reason?: string; keepDone?: boolean } = {}): Tracker {
   const wanted = new Set(ids)
@@ -652,8 +655,13 @@ export function setTicketStatuses(tracker: Tracker, ids: readonly string[], stat
         manual: null,
         tickets: milestone.tickets.map((ticket) => {
           if (!wanted.has(ticket.id)) return ticket
-          if (options.keepDone && ticket.status === 'done') return ticket
-          return { ...ticket, status, blocked: status === 'blocked' ? (options.reason?.trim() || 'No reason given') : null }
+          if (options.keepDone && isClosed(ticket.status)) return ticket
+          return {
+            ...ticket,
+            status,
+            blocked: status === 'blocked' ? options.reason?.trim() || 'No reason given' : null,
+            cancelled: status === 'cancelled' ? options.reason?.trim() || null : null
+          }
         })
       }
     })
@@ -733,7 +741,7 @@ export function applyTrackerEdit(tracker: Tracker, edit: TrackerEdit): Edited<Tr
       const title = cleanTitle(edit.title)
       if (!title) return { ok: false, message: 'Give the ticket a title' }
       if (!milestone(edit.milestone)) return { ok: false, message: 'That milestone is gone' }
-      const ticket: MapTicket = { id: newTicketId(), number: tracker.nextTicket, title, description: edit.description ?? '', acceptance: [], constraints: [], after: [], docs: [], project: null, status: 'todo', blocked: null }
+      const ticket: MapTicket = { id: newTicketId(), number: tracker.nextTicket, title, description: edit.description ?? '', acceptance: [], constraints: [], after: [], docs: [], project: null, status: 'todo', blocked: null, cancelled: null }
       const numbered = { ...tracker, nextTicket: tracker.nextTicket + 1 }
       return { ok: true, value: updateMilestone(numbered, edit.milestone, (m) => ({ ...m, tickets: insertBefore(m.tickets, ticket, edit.before) })), message: `Added ${title}` }
     }
@@ -911,7 +919,8 @@ export function proposedTicket(ticket: ProposedTicket, number: number, projects:
     docs: ticket.docs,
     project: ticket.project && projects.includes(ticket.project) ? ticket.project : null,
     status: 'todo',
-    blocked: null
+    blocked: null,
+    cancelled: null
   }
 }
 

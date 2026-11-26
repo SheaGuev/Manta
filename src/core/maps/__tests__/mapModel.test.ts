@@ -30,7 +30,7 @@ import {
 } from '../mapModel'
 
 function ticket(id: string, status: MapTicket['status'] = 'todo'): MapTicket {
-  return { id, number: 0, title: `Ticket ${id}`, description: '', acceptance: [], constraints: [], after: [], docs: [], project: null, status, blocked: null }
+  return { id, number: 0, title: `Ticket ${id}`, description: '', acceptance: [], constraints: [], after: [], docs: [], project: null, status, blocked: null, cancelled: null }
 }
 
 function milestone(id: string, tickets: MapTicket[], extra: Partial<MapMilestone> = {}): MapMilestone {
@@ -246,7 +246,7 @@ describe('parsing stored files', () => {
   it('drops malformed tickets and launches, keeps a blocked reason only while blocked, and reads accepted as done', () => {
     const tracker = parseTracker({ milestones: [{ id: 'ms_1', title: 'M', tickets: [{ id: 't', title: 'T', status: 'accepted', blocked: 'old' }, { title: 'no id' }] }, 'junk'] })
     expect(tracker.milestones).toHaveLength(1)
-    expect(tracker.milestones[0]?.tickets).toEqual([{ id: 't', number: 1, title: 'T', description: '', acceptance: [], constraints: [], after: [], docs: [], project: null, status: 'done', blocked: null }])
+    expect(tracker.milestones[0]?.tickets).toEqual([{ id: 't', number: 1, title: 'T', description: '', acceptance: [], constraints: [], after: [], docs: [], project: null, status: 'done', blocked: null, cancelled: null }])
     expect(parseLaunch({ id: 'l_1', scope: { tickets: [] }, project: 'p', worktree: 'w', branch: 'b' })).toBeNull()
     expect(parseLaunch({ id: 'l_1', scope: { ticket: 't' }, project: 'p', worktree: 'w', branch: 'b', sessions: [{ terminal: 'term_1' }] })?.sessions).toEqual([])
   })
@@ -512,3 +512,25 @@ describe('pullRequestHealth', () => {
   })
 })
 
+
+describe('cancelled tickets', () => {
+  it('close a milestone and the map like done ones, and stop holding back tickets that wait on them', () => {
+    expect(milestoneStatus(milestone('ms_1', [ticket('a', 'done'), ticket('b', 'cancelled')]), [])).toBe('done')
+    expect(mapStage({ stage: null }, tr([milestone('ms_1', [ticket('a', 'done'), ticket('b', 'cancelled')])]), [launch({ ticket: 'a' })])).toBe('shipped')
+    const waiting = { ...ticket('b'), after: ['a'] }
+    const tracker = tr([milestone('ms_1', [ticket('a', 'cancelled'), waiting])])
+    expect(waitingOn(tracker, waiting)).toEqual([])
+    expect(readyTickets(tracker, milestone('ms_1', [ticket('a', 'cancelled'), waiting])).map((t) => t.id)).toEqual(['b'])
+  })
+
+  it('keep the reason given, drop it when the ticket is reopened, and read it back from a stored tracker', () => {
+    const tracker = tr([milestone('ms_1', [ticket('a')])])
+    const edited = applyTrackerEdit(tracker, { kind: 'set-ticket-status', ticket: 'a', status: 'cancelled', reason: ' Out of scope ' })
+    const cancelled = edited.ok ? edited.value.milestones[0]?.tickets[0] : undefined
+    expect(cancelled).toMatchObject({ status: 'cancelled', cancelled: 'Out of scope', blocked: null })
+    const reopened = edited.ok ? applyTrackerEdit(edited.value, { kind: 'set-ticket-status', ticket: 'a', status: 'todo' }) : edited
+    expect(reopened.ok && reopened.value.milestones[0]?.tickets[0]).toMatchObject({ status: 'todo', cancelled: null })
+    const stored = JSON.parse(JSON.stringify(edited.ok ? edited.value : tracker))
+    expect(parseTracker(stored).milestones[0]?.tickets[0]).toMatchObject({ status: 'cancelled', cancelled: 'Out of scope' })
+  })
+})

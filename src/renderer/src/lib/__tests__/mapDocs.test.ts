@@ -55,7 +55,7 @@ describe('the docs list', () => {
   })
 
   it('finds the tickets citing a doc, whole or a section', () => {
-    const t = (id: string, path: string, heading: string | null): MapTicket => ({ id, number: 1, title: id, description: '', acceptance: [], constraints: [], after: [], docs: [{ path, heading }], project: null, status: 'todo', blocked: null })
+    const t = (id: string, path: string, heading: string | null): MapTicket => ({ id, number: 1, title: id, description: '', acceptance: [], constraints: [], after: [], docs: [{ path, heading }], project: null, status: 'todo', blocked: null, cancelled: null })
     const milestones: MapMilestoneInfo[] = [{ id: 'ms_1', title: 'M', description: '', doneWhen: [], tickets: [t('a', 'run.md', null), t('b', 'run.md', 'Verify'), t('c', 'other.md', null)], landed: false, manual: null, status: 'todo' }]
     expect(citingTickets({ milestones }, 'run.md').map((x) => x.id)).toEqual(['a', 'b'])
   })

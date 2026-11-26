@@ -1,4 +1,5 @@
 import type { BriefReadiness, ConfirmProposals, DocRef, MapDecision, MapDoc, MapLaunch, MapMilestone, MapTicket, TicketStatus } from '../../shared/ipc'
+import { isClosed, ticketProgress } from '../../shared/ipc'
 import { fenced } from '../threads/implementationBrief'
 import { decisionNumber, findTicket, mapKey, openDecisions, scopeTicketIds, type MapFile, type Tracker } from './mapModel'
 
@@ -27,7 +28,7 @@ export interface LaunchBriefContext {
 /** How many earlier wrap-ups a brief carries, so it stays a pointer and not a history. */
 const EARLIER_LIMIT = 5
 
-const STATUS_LABEL: Record<TicketStatus, string> = { todo: 'to do', 'in-progress': 'in progress', blocked: 'blocked', 'in-review': 'in review', done: 'done' }
+const STATUS_LABEL: Record<TicketStatus, string> = { todo: 'to do', 'in-progress': 'in progress', blocked: 'blocked', 'in-review': 'in review', done: 'done', cancelled: 'cancelled' }
 
 function firstLines(text: string, lines: number): string {
   const kept = text.trim().split('\n').filter((line) => line.trim()).slice(0, lines).join(' ')
@@ -100,7 +101,7 @@ export function briefReadiness(map: Pick<MapFile, 'key' | 'title'>, tracker: Tra
     [ticket.acceptance.length > 0, 'criteria', 'No acceptance criteria'],
     [docs.length > 0, 'source context', 'No source context']
   ]
-  const waits = ticket.after.flatMap((id) => findTicket(tracker, id)?.ticket ?? []).filter((t) => t.status !== 'done')
+  const waits = ticket.after.flatMap((id) => findTicket(tracker, id)?.ticket ?? []).filter((t) => !isClosed(t.status))
   const blocking = [
     ...waits.map((t) => `Waits for ${mapKey(map)}-${t.number}`),
     ...openDecisions(tracker, ticket.id).map((d) => `Decision ${decisionNumber(d)} is open`)
@@ -436,11 +437,11 @@ export function mapOutline(map: MapFile, milestones: readonly (MapMilestone & { 
   if (milestones.length === 0) lines.push('None yet.', '')
   const ticketTitles = new Map(milestones.flatMap((m) => m.tickets.map((t) => [t.id, t.title])))
   for (const m of milestones) {
-    const done = m.tickets.filter((t) => t.status === 'done').length
-    lines.push(`- ${m.title} (\`${m.id}\`, ${m.status}${m.tickets.length > 0 ? `, ${done}/${m.tickets.length} done` : ''})${m.id === current ? ' ← current' : ''}`)
+    const { done, total } = ticketProgress(m.tickets)
+    lines.push(`- ${m.title} (\`${m.id}\`, ${m.status}${total > 0 ? `, ${done}/${total} done` : ''})${m.id === current ? ' ← current' : ''}`)
     for (const t of m.tickets) {
       const extras = [...(t.project ? [`in ${t.project}`] : []), ...(t.after.length > 0 ? [`waits for ${t.after.map((id) => ticketTitles.get(id) ?? id).join(', ')}`] : [])]
-      lines.push(`  - ${t.title} (\`${t.id}\`, ${STATUS_LABEL[t.status]}${t.blocked ? `: ${t.blocked}` : ''})${extras.length > 0 ? `; ${extras.join('; ')}` : ''}`)
+      lines.push(`  - ${t.title} (\`${t.id}\`, ${STATUS_LABEL[t.status]}${t.blocked ? `: ${t.blocked}` : t.cancelled ? `: ${t.cancelled}` : ''})${extras.length > 0 ? `; ${extras.join('; ')}` : ''}`)
     }
   }
   if (decisions.length > 0) {

@@ -22,6 +22,7 @@ import type {
   TicketStatus,
   TrackerEdit
 } from '../shared/ipc'
+import { ticketProgress } from '../shared/ipc'
 import type { McpAccess, ThreadAgent } from './agent/threadAgent'
 import { askSystemPrompt, breakDownPrompt, mapOutline } from './maps/mapBrief'
 import { migrateLegacy, parseLegacyMap } from './maps/mapMigration'
@@ -237,14 +238,15 @@ export class WorkspaceMaps {
       const found = findTicket(tracker, target.ticket)
       if (!found) return { ok: false, message: 'That ticket is gone' }
       const launched = launches.some((launch) => ('ticket' in launch.scope && launch.scope.ticket === target.ticket) || ('tickets' in launch.scope && launch.scope.tickets.includes(target.ticket)))
-      if (launched && !(await confirm(`Remove the ticket “${found.ticket.title}”? Work was launched on it; its worktree, branch and journal stay.`))) return null
-      return this.changeTracker(id, (current) => ({ ok: true, value: removeTicket(current, target.ticket), message: `Removed ${found.ticket.title}` }))
+      const question = `Delete the ticket “${found.ticket.title}”? It can't be brought back; cancel it instead to keep it on the map.${launched ? ' Work was launched on it; its worktree, branch and journal stay.' : ''}`
+      if (!(await confirm(question))) return null
+      return this.changeTracker(id, (current) => ({ ok: true, value: removeTicket(current, target.ticket), message: `Deleted ${found.ticket.title}` }))
     }
     const milestone = tracker.milestones.find((m) => m.id === target.milestone)
     if (!milestone) return { ok: false, message: 'That milestone is gone' }
     const launched = launches.some((launch) => 'milestone' in launch.scope && launch.scope.milestone === milestone.id)
-    if ((milestone.tickets.length > 0 || launched) && !(await confirm(`Remove the milestone “${milestone.title}”${milestone.tickets.length > 0 ? ` and its ${milestone.tickets.length} tickets` : ''}?`))) return null
-    const result = await this.changeTracker(id, (current) => ({ ok: true, value: removeMilestone(current, milestone.id), message: `Removed ${milestone.title}` }))
+    if ((milestone.tickets.length > 0 || launched) && !(await confirm(`Delete the milestone “${milestone.title}”${milestone.tickets.length > 0 ? ` and its ${milestone.tickets.length} tickets` : ''}?`))) return null
+    const result = await this.changeTracker(id, (current) => ({ ok: true, value: removeMilestone(current, milestone.id), message: `Deleted ${milestone.title}` }))
     if (result.ok) await this.access.serial(async () => {
       const map = await this.requireMap(id)
       await this.store.writeMap({ ...map, pinned: map.pinned === milestone.id ? null : map.pinned, docs: map.docs.map((doc) => ({ ...doc, milestones: doc.milestones.filter((m) => m !== milestone.id) })) })
@@ -560,7 +562,7 @@ export class WorkspaceMaps {
       title: map.title,
       description: map.description,
       createdAt: map.createdAt,
-      current: current ? { id: current.id, title: current.title, done: current.tickets.filter((t) => t.status === 'done').length, total: current.tickets.length } : null,
+      current: current ? { id: current.id, title: current.title, ...ticketProgress(current.tickets) } : null,
       waiting: (await this.store.suggestions(map.id)).length + (await this.proposals(map.id)).length + blocked + prs + ready,
       running: this.turns.running(map.id)
     }

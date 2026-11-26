@@ -1,6 +1,7 @@
 import { ArrowRight, ArrowUpRight, Check, Plus, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { MapDetail, MapDocProposal, MapEvent, MapLaunch } from '../../../shared/ipc'
+import { isClosed, ticketProgress } from '../../../shared/ipc'
 import { changedLines } from '../lib/diffStats'
 import { feedDays, FILTER_LABEL, inFilter, itemTitle, KIND_LABEL, needsAction, sinceSummary, type ActivityFilter, type FeedItem } from '../lib/mapActivity'
 import { decisionNumber, milestoneKey, ticketKey } from '../lib/mapStatus'
@@ -127,8 +128,7 @@ function entryMeta(item: FeedItem, map: MapDetail): string {
   const ticket = map.milestones.flatMap((m) => m.tickets).find((t) => t.id === event.ticket)
   const milestone = map.milestones.find((m) => m.id === event.milestone)
   if (item.events.length > 1 && event.kind === 'ticket-done') {
-    const total = milestone?.tickets.length ?? 0
-    const done = milestone?.tickets.filter((t) => t.status === 'done').length ?? 0
+    const { done, total } = ticketProgress(milestone?.tickets ?? [])
     return milestone ? `Milestone progress is now ${done} / ${total} done` : ''
   }
   if (event.kind === 'doc-change-proposed') return [event.detail ? `From “${event.detail}”` : '', event.doc ?? ''].filter(Boolean).join(' · ')
@@ -217,6 +217,7 @@ function agentState(map: MapDetail, launch: MapLaunch, terminals: MapActions['te
   const ticket = map.milestones.flatMap((m) => m.tickets).find((t) => 'ticket' in launch.scope && t.id === launch.scope.ticket)
   const live = launch.sessions.flatMap((s) => terminals.filter((t) => t.id === s.terminal && t.state !== 'exited'))
   if (ticket?.status === 'done') return { label: 'Done', you: false }
+  if (ticket?.status === 'cancelled') return { label: 'Cancelled', you: false }
   if (launch.landed) return { label: 'Merged', you: false }
   if (live.some((t) => t.state === 'waiting')) return { label: 'Waiting for you', you: true }
   if (live.some((t) => t.state === 'working' || t.state === 'starting')) return { label: 'Working', you: false }
@@ -331,7 +332,7 @@ function DecisionDetail({ event, map, actions }: { event: MapEvent; map: MapDeta
       </div>
     )
   }
-  const held = map.milestones.flatMap((m) => m.tickets).filter((t) => decision.blocks.includes(t.id) && t.status !== 'done')
+  const held = map.milestones.flatMap((m) => m.tickets).filter((t) => decision.blocks.includes(t.id) && !isClosed(t.status))
   return (
     <div className="map-ac-detail-body">
       <span className="map-dk-rail-label">Decision {decisionNumber(decision)}</span>
@@ -405,7 +406,7 @@ function WorkDetail({ item, map, actions }: { item: FeedItem; map: MapDetail; ac
   const milestone = map.milestones.find((m) => m.id === event?.milestone)
   const tickets = map.milestones.flatMap((m) => m.tickets)
   const ticket = item.events.length === 1 ? tickets.find((t) => t.id === event?.ticket) : undefined
-  const done = milestone?.tickets.filter((t) => t.status === 'done').length ?? 0
+  const progress = ticketProgress(milestone?.tickets ?? [])
   return (
     <div className="map-ac-detail-body">
       <span className="map-dk-rail-label">{ticket ? `Ticket / ${ticketKey(map, ticket)}` : milestone ? `Milestone / ${milestoneKey(map, milestone)}` : (event && KIND_LABEL[event.kind]) || ''}</span>
@@ -420,9 +421,9 @@ function WorkDetail({ item, map, actions }: { item: FeedItem; map: MapDetail; ac
           ))}
         </div>
       )}
-      {milestone && milestone.tickets.length > 0 && (
+      {milestone && progress.total > 0 && (
         <p className="map-ac-detail-text">
-          {milestone.title}: {done} / {milestone.tickets.length} done
+          {milestone.title}: {progress.done} / {progress.total} done
         </p>
       )}
       {ticket ? (

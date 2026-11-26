@@ -1,4 +1,5 @@
 import type { MapBatch, MapDetail, MapLaunch, MapTicket, TerminalInfo } from '../../../shared/ipc'
+import { isClosed } from '../../../shared/ipc'
 import { boardRows, sortBoard, type BoardRow } from '../../../shared/mapBoard'
 
 /** One group on the Board screen: a batch with its rows, or the work started on its own (`batch` null). */
@@ -40,7 +41,7 @@ export function mapBoardRows(map: Pick<MapDetail, 'milestones' | 'launches'>, te
     blocked: (launch, ticket) => scope(launch, ticket).find((t) => t.status === 'blocked')?.blocked ?? null,
     unblocks: (launch, ticket) => {
       const ids = scope(launch, ticket).map((t) => t.id)
-      return tickets.filter((t) => t.status !== 'done' && t.after.some((a) => ids.includes(a))).length
+      return tickets.filter((t) => !isClosed(t.status) && t.after.some((a) => ids.includes(a))).length
     }
   })
 }

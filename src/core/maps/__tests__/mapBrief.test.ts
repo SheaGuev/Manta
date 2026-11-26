@@ -36,8 +36,8 @@ const TRACKER: Tracker = {
       landed: false,
       manual: null,
       tickets: [
-        { id: 'tk_1', number: 1, title: 'Data model', description: 'Types and guards.', acceptance: ['Guards reject bad input'], constraints: ['No new dependencies'], after: [], docs: [{ path: 'docs/rfc.md', heading: 'Data' }], project: null, status: 'todo', blocked: null },
-        { id: 'tk_2', number: 2, title: 'Store', description: 'Atomic writes.', acceptance: [], constraints: [], after: ['tk_1'], docs: [], project: null, status: 'done', blocked: null }
+        { id: 'tk_1', number: 1, title: 'Data model', description: 'Types and guards.', acceptance: ['Guards reject bad input'], constraints: ['No new dependencies'], after: [], docs: [{ path: 'docs/rfc.md', heading: 'Data' }], project: null, status: 'todo', blocked: null, cancelled: null },
+        { id: 'tk_2', number: 2, title: 'Store', description: 'Atomic writes.', acceptance: [], constraints: [], after: ['tk_1'], docs: [], project: null, status: 'done', blocked: null, cancelled: null }
       ]
     },
     { id: 'ms_2', title: 'Screens', description: '', doneWhen: [], landed: false, manual: null, tickets: [] }

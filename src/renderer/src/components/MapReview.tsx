@@ -14,7 +14,7 @@ const api = window.manta
 /** How many changed lines a doc update shows before View full document diff. */
 const PREVIEW_LINES = 8
 
-const STATUS_TONE: Record<ReturnType<typeof workState>['status'], Tone> = { ready: 'muted', 'in-progress': 'info', blocked: 'muted', 'in-review': 'done', done: 'done' }
+const STATUS_TONE: Record<ReturnType<typeof workState>['status'], Tone> = { ready: 'muted', 'in-progress': 'info', blocked: 'muted', 'in-review': 'done', done: 'done', cancelled: 'muted' }
 
 /**
  * Reviewing a ticket's work (frame "Review and handoff"): what its agent did, the evidence for each

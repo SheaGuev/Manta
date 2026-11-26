@@ -3,7 +3,7 @@ import type { LaunchWrapUp, MapDetail, MapLaunch, MapTicket } from '../../../../
 import { hasWork, ticketReview } from '../mapReview'
 
 function ticket(status: MapTicket['status'] = 'in-review'): MapTicket {
-  return { id: 'tk_1', number: 82, title: 'E2E', description: '', acceptance: ['Auth works', 'Launch works'], constraints: [], after: [], docs: [], project: null, status, blocked: null }
+  return { id: 'tk_1', number: 82, title: 'E2E', description: '', acceptance: ['Auth works', 'Launch works'], constraints: [], after: [], docs: [], project: null, status, blocked: null, cancelled: null }
 }
 
 function wrapUp(at: string, extra: Partial<LaunchWrapUp> = {}): LaunchWrapUp {

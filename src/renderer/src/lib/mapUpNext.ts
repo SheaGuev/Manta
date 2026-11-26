@@ -1,4 +1,5 @@
 import type { MapDetail, MapDocInfo, MapDocProposal, MapLaunch, MapMilestoneInfo, MapSuggestion, MapTicket, PullRequestInfo, TerminalInfo } from '../../../shared/ipc'
+import { isClosed } from '../../../shared/ipc'
 import { isReady, ticketLaunches, waitingOn } from './mapStatus'
 
 /** Something waiting on the user, in the order Needs review shows it. */
@@ -188,7 +189,7 @@ function planningStep(map: MapDetail): UpNext {
 
 /** A ticket leads with starting it, opening its session, or reviewing its pull request; nothing when done. A block's reason is the ticket page's notice, so it isn't repeated here. */
 export function ticketUpNext(map: MapDetail, ticket: MapTicket, terminals: readonly TerminalInfo[]): UpNext | null {
-  if (ticket.status === 'done') return null
+  if (isClosed(ticket.status)) return null
   const session = ticketSession(map, ticket.id, terminals)
   if (session) {
     const { launch } = session
@@ -214,5 +215,6 @@ export const STATUS_LABEL: Record<MapTicket['status'] | MapMilestoneInfo['status
   'in-progress': 'in progress',
   blocked: 'blocked',
   'in-review': 'in review',
-  done: 'done'
+  done: 'done',
+  cancelled: 'cancelled'
 }

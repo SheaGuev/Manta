@@ -1,6 +1,7 @@
 import { ExternalLink, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 import type { DecisionInput, DecisionOption, DecisionStatus, DocRef, MapDecision, MapDetail, TrackerEdit } from '../../../shared/ipc'
+import { isClosed } from '../../../shared/ipc'
 import { authorLabel, decisionNumber, milestoneKey, raisedIn, ticketKey } from '../lib/mapStatus'
 import { relativeDate } from '../lib/relativeDate'
 import { Chip } from './MapOverview'
@@ -274,7 +275,7 @@ function docLabel(map: MapDetail, ref: DocRef): string {
 function BlocksPicker({ map, value, onChange }: { map: MapDetail; value: readonly string[]; onChange: (ids: string[]) => void }): React.JSX.Element {
   const options = map.milestones.flatMap((milestone) =>
     milestone.tickets
-      .filter((t) => t.status !== 'done' || value.includes(t.id))
+      .filter((t) => !isClosed(t.status) || value.includes(t.id))
       .map((ticket) => ({ id: ticket.id, key: ticketKey(map, ticket), label: ticket.title, group: `${milestoneKey(map, milestone)} · ${milestone.title}` }))
   )
   return <MultiSelect options={options} value={value} onChange={onChange} placeholder="Blocks nothing" />

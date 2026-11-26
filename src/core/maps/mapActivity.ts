@@ -17,6 +17,7 @@ const KINDS: readonly MapEventKind[] = [
   'ticket-done',
   'ticket-blocked',
   'ticket-in-review',
+  'ticket-cancelled',
   'milestone-done',
   'decision-raised',
   'decision-decided',
@@ -63,9 +64,9 @@ export function parseMapEvent(value: unknown): MapEvent | null {
   }
 }
 
-const STATUS_EVENT: Partial<Record<TicketStatus, MapEventKind>> = { done: 'ticket-done', blocked: 'ticket-blocked', 'in-review': 'ticket-in-review' }
+const STATUS_EVENT: Partial<Record<TicketStatus, MapEventKind>> = { done: 'ticket-done', blocked: 'ticket-blocked', 'in-review': 'ticket-in-review', cancelled: 'ticket-cancelled' }
 
-/** The tracker's changes as events: tickets done, blocked or in review; milestones done; decisions raised, decided, superseded or reopened. */
+/** The tracker's changes as events: tickets done, blocked, in review or cancelled; milestones done; decisions raised, decided, superseded or reopened. */
 export function trackerEvents(before: Tracker, after: Tracker, launches: readonly MapLaunch[], at: string): MapEvent[] {
   const events: MapEvent[] = []
   const was = new Map(before.milestones.flatMap((m) => m.tickets.map((t): [string, TicketStatus] => [t.id, t.status])))
@@ -73,7 +74,7 @@ export function trackerEvents(before: Tracker, after: Tracker, launches: readonl
     for (const ticket of milestone.tickets) {
       const kind = STATUS_EVENT[ticket.status]
       if (!kind || was.get(ticket.id) === ticket.status) continue
-      events.push(event({ kind, at, title: ticket.title, detail: ticket.status === 'blocked' ? (ticket.blocked ?? '') : '', ticket: ticket.id, milestone: milestone.id }))
+      events.push(event({ kind, at, title: ticket.title, detail: ticket.status === 'blocked' ? (ticket.blocked ?? '') : ticket.status === 'cancelled' ? (ticket.cancelled ?? '') : '', ticket: ticket.id, milestone: milestone.id }))
     }
   }
   const done = new Set(milestoneInfos(before, launches).filter((m) => m.status === 'done').map((m) => m.id))

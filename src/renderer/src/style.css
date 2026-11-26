@@ -7057,3 +7057,53 @@ input:focus {
 .map-dk-rail-actions:focus-within {
   opacity: 1;
 }
+
+.map-cancel-form {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 6px 0;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-raised);
+  font-size: 12px;
+}
+
+.map-ms-table .map-cancel-form {
+  margin: 0 6px 6px;
+}
+
+.map-cancel-title {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.map-cancel-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.map-ms-row.cancelled .map-ms-ticket-title {
+  text-decoration: line-through;
+}
+
+.map-tk-cancelled {
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  background: var(--bg-hover);
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.map-tk-delete {
+  align-self: flex-start;
+  margin-top: 8px;
+  color: var(--text-faint);
+}
+
+.map-tk-delete:hover {
+  color: var(--red);
+}

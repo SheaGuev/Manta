@@ -1,4 +1,4 @@
-import type { MapAuthor, MapDecision, MapDetail, MapLaunch, MapMilestoneInfo, MapStage, MapTicket, TerminalInfo } from '../../../shared/ipc'
+import { isClosed, type MapAuthor, type MapDecision, type MapDetail, type MapLaunch, type MapMilestoneInfo, type MapStage, type MapTicket, type TerminalInfo } from '../../../shared/ipc'
 
 export const STAGE_LABEL: Record<MapStage, string> = { planning: 'Planning', building: 'Building', validating: 'Validating', shipped: 'Shipped' }
 
@@ -6,11 +6,11 @@ export const STAGE_LABEL: Record<MapStage, string> = { planning: 'Planning', bui
  * A ticket's work status as the map shows it, kept apart from what its agent is doing. A ticket to do
  * is Ready, or Blocked when it waits on tickets not done or an open decision.
  */
-export type WorkStatus = 'ready' | 'in-progress' | 'blocked' | 'in-review' | 'done'
+export type WorkStatus = 'ready' | 'in-progress' | 'blocked' | 'in-review' | 'done' | 'cancelled'
 
 export interface WorkState {
   status: WorkStatus
-  /** Why it's blocked: the agent's reason, "Depends on OMN-81" or "Decision 006 required"; null otherwise. */
+  /** Why it's blocked (the agent's reason, "Depends on OMN-81" or "Decision 006 required") or cancelled; null otherwise. */
   reason: string | null
 }
 
@@ -19,7 +19,8 @@ export const WORK_LABEL: Record<WorkStatus, string> = {
   'in-progress': 'In progress',
   blocked: 'Blocked',
   'in-review': 'In review',
-  done: 'Done'
+  done: 'Done',
+  cancelled: 'Cancelled'
 }
 
 /** What the agent on a ticket is doing, independent of the ticket's status. */
@@ -48,10 +49,10 @@ export function decisionNumber(decision: Pick<MapDecision, 'number'>): string {
   return String(decision.number).padStart(3, '0')
 }
 
-/** The tickets this one waits for that aren't done. */
+/** The tickets this one waits for that aren't done; a cancelled one no longer holds it back. */
 export function waitingOn(map: Pick<MapDetail, 'milestones'>, ticket: MapTicket): MapTicket[] {
   const tickets = map.milestones.flatMap((m) => m.tickets)
-  return ticket.after.flatMap((id) => tickets.find((t) => t.id === id) ?? []).filter((t) => t.status !== 'done')
+  return ticket.after.flatMap((id) => tickets.find((t) => t.id === id) ?? []).filter((t) => !isClosed(t.status))
 }
 
 /** Open decisions that hold this ticket back. */
@@ -66,6 +67,7 @@ export function isReady(map: Pick<MapDetail, 'milestones' | 'decisions'>, ticket
 
 export function workState(map: Pick<MapDetail, 'key' | 'milestones' | 'decisions'>, ticket: MapTicket): WorkState {
   if (ticket.status === 'blocked') return { status: 'blocked', reason: ticket.blocked }
+  if (ticket.status === 'cancelled') return { status: 'cancelled', reason: ticket.cancelled }
   if (ticket.status !== 'todo') return { status: ticket.status, reason: null }
   const waits = waitingOn(map, ticket)
   if (waits.length > 0) return { status: 'blocked', reason: `Depends on ${waits.map((t) => ticketKey(map, t)).join(', ')}` }

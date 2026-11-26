@@ -1,4 +1,5 @@
 import type { DocRef, MapDetail, MapMilestoneInfo, MapTicket, TerminalInfo } from '../../../shared/ipc'
+import { isClosed } from '../../../shared/ipc'
 import { agentActivity, decisionNumber, openDecisions, ticketKey, ticketLaunches, workState } from './mapStatus'
 
 type MapPart = Pick<MapDetail, 'key' | 'milestones' | 'decisions' | 'launches'>
@@ -8,12 +9,12 @@ export type TicketFilter = 'open' | 'needs-you' | 'ready'
 
 /** Whether a ticket waits on the user: its agent is asking, or an open decision holds it. Done tickets never do. */
 export function needsYou(map: MapPart, ticket: MapTicket, terminals: readonly TerminalInfo[]): boolean {
-  if (ticket.status === 'done') return false
+  if (isClosed(ticket.status)) return false
   return agentActivity(map, ticket, terminals) === 'needs-you' || openDecisions(map, ticket.id).length > 0
 }
 
 export function matchesFilter(map: MapPart, ticket: MapTicket, filter: TicketFilter, terminals: readonly TerminalInfo[]): boolean {
-  if (filter === 'open') return ticket.status !== 'done'
+  if (filter === 'open') return !isClosed(ticket.status)
   if (filter === 'needs-you') return needsYou(map, ticket, terminals)
   return workState(map, ticket).status === 'ready'
 }
@@ -26,7 +27,7 @@ export function ticketMeta(map: MapPart, ticket: MapTicket): string | null {
   const work = workState(map, ticket)
   if (work.reason) return work.reason
   const decisions = openDecisions(map, ticket.id)
-  if (decisions.length > 0 && ticket.status !== 'done') return `Decision ${decisions.map(decisionNumber).join(', ')} required`
+  if (decisions.length > 0 && !isClosed(ticket.status)) return `Decision ${decisions.map(decisionNumber).join(', ')} required`
   if (ticket.status === 'in-review' || ticket.status === 'done') {
     const wrapUp = ticketLaunches(map, ticket.id).flatMap((l) => (l.wrapUp ? [l.wrapUp] : [])).at(-1)
     const checks = wrapUp ? wrapUp.criteria.filter((c) => c.ticket === ticket.id).length || wrapUp.checks.length : 0

@@ -3,7 +3,7 @@ import type { DocRef, MapDecision, MapDetail, MapLaunch, MapMilestoneInfo, MapTi
 import { independentTickets, matchesFilter, needsYou, stripMarks, ticketMeta } from '../mapMilestones'
 
 function ticket(id: string, number: number, status: MapTicket['status'] = 'todo', extra: Partial<MapTicket> = {}): MapTicket {
-  return { id, number, title: `T${id}`, description: '', acceptance: [], constraints: [], after: [], docs: [], project: null, status, blocked: null, ...extra }
+  return { id, number, title: `T${id}`, description: '', acceptance: [], constraints: [], after: [], docs: [], project: null, status, blocked: null, cancelled: null, ...extra }
 }
 
 function milestone(id: string, tickets: MapTicket[], status: MapMilestoneInfo['status'] = 'in-progress'): MapMilestoneInfo {

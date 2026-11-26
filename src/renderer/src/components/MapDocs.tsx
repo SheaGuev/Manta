@@ -2,6 +2,7 @@ import { AlertTriangle, ArrowRight, Check, Circle, ExternalLink, FilePlus, FileT
 import { useCallback, useEffect, useState } from 'react'
 import { Streamdown } from 'streamdown'
 import type { DocRef, DocRole, MapDecision, MapDetail, MapDocInfo, MapDocProposal } from '../../../shared/ipc'
+import { isClosed } from '../../../shared/ipc'
 import { externalLink } from '../lib/externalLink'
 import { citingTickets, docCoverage, docMatches, headingLine, plainHeading, ROLE_LABEL, ROLE_ORDER, roleFilters, sectionLink, splitDoc } from '../lib/mapDocs'
 import { decisionNumber, milestoneKey, ticketKey } from '../lib/mapStatus'
@@ -474,7 +475,7 @@ function ProposalBanner({ proposals, shown, onReview }: { proposals: readonly Ma
 /** Tickets not done, by milestone, to attach a doc or a section to; a tick for those that have it. */
 function AttachPicker({ at, map, doc, actions, onClose }: { at: Point; map: MapDetail; doc: DocRef; actions: MapActions; onClose: () => void }): React.JSX.Element {
   const has = (docs: readonly DocRef[]): boolean => docs.some((d) => d.path === doc.path && d.heading === doc.heading)
-  const tickets = map.milestones.flatMap((m) => m.tickets.filter((t) => t.status !== 'done').map((ticket) => ({ milestone: m, ticket })))
+  const tickets = map.milestones.flatMap((m) => m.tickets.filter((t) => !isClosed(t.status)).map((ticket) => ({ milestone: m, ticket })))
   const options: SelectOption[] = tickets.map(({ milestone, ticket }) => ({ id: ticket.id, key: ticketKey(map, ticket), label: ticket.title, group: `${milestoneKey(map, milestone)} · ${milestone.title}` }))
   const attached = tickets.filter(({ ticket }) => has(ticket.docs)).map(({ ticket }) => ticket.id)
   const attach = (ids: string[]): void => {

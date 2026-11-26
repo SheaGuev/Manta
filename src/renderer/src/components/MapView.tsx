@@ -111,7 +111,8 @@ export interface MapActions {
   review: (item: ReviewItem) => void
   edit: (edit: TrackerEdit) => Promise<boolean>
   editDocs: (edit: MapDocsEdit) => Promise<boolean>
-  remove: (target: { ticket: string } | { milestone: string }) => void
+  /** Resolves true once deleted; false when refused or backed out of at the confirmation. */
+  remove: (target: { ticket: string } | { milestone: string }) => Promise<boolean>
   resolve: (suggestion: string, accept: boolean, pick?: number[] | null) => void
   pin: (milestone: string | null) => void
   breakDown: () => void
@@ -353,10 +354,10 @@ export function MapView(props: MapViewProps): React.JSX.Element {
     edit: (edit) => api.editMapTracker(docsRoot, id, edit).then(result).catch((e: unknown) => (report(e), false)),
     editDocs: (edit) => api.editMapDocs(docsRoot, id, edit).then(result).catch((e: unknown) => (report(e), false)),
     remove: (target) =>
-      void api
+      api
         .removeFromTracker(docsRoot, id, target)
-        .then((r) => r && result(r))
-        .catch(report),
+        .then((r) => (r ? result(r) : false))
+        .catch((e: unknown) => (report(e), false)),
     resolve: (suggestion, accept, pick = null) =>
       void api
         .resolveMapSuggestion(docsRoot, id, suggestion, accept, pick)

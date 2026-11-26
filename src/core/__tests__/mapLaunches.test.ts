@@ -289,7 +289,7 @@ describe('MapLaunches', () => {
 
     const detail = await s.ws.maps.get(s.map)
     /** Each line typed after the block is a prompt from the user, which counts as answering it. */
-    expect(detail.milestones[0]?.tickets[0]).toMatchObject({ status: 'in-progress', blocked: null })
+    expect(detail.milestones[0]?.tickets[0]).toMatchObject({ status: 'in-progress', blocked: null, cancelled: null })
     expect(detail.suggestions).toMatchObject([{ kind: 'add-doc', path: 'auth.md', from: { launch: started.launch.id } }])
     expect(detail.proposals).toMatchObject([{ doc: 'auth.md', title: 'Seven days', from: { launch: started.launch.id } }])
     /** The doc, the proposal, and the launch ready for a pull request. */

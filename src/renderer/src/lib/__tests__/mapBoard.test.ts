@@ -3,7 +3,7 @@ import type { MapBatch, MapDetail, MapLaunch, MapTicket, TerminalInfo } from '..
 import { boardGroups, coordinatorState, needsYou } from '../mapBoard'
 
 function ticket(id: string, extra: Partial<MapTicket> = {}): MapTicket {
-  return { id, number: 1, title: `T ${id}`, description: '', acceptance: [], constraints: [], after: [], docs: [], project: null, status: 'in-progress', blocked: null, ...extra }
+  return { id, number: 1, title: `T ${id}`, description: '', acceptance: [], constraints: [], after: [], docs: [], project: null, status: 'in-progress', blocked: null, cancelled: null, ...extra }
 }
 
 function launch(id: string, ticketId: string, batch: string | null): MapLaunch {

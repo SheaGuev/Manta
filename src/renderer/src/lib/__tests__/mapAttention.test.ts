@@ -3,7 +3,7 @@ import type { MapDecision, MapDetail, MapEvent, MapLaunch, MapMilestoneInfo, Map
 import { attentionItems, decisionSummaries, docSummaries, overviewReview, recommendedNext, sinceLastVisit } from '../mapAttention'
 
 function ticket(id: string, status: MapTicket['status'] = 'todo', extra: Partial<MapTicket> = {}): MapTicket {
-  return { id, number: 1, title: `T${id}`, description: '', acceptance: [], constraints: [], after: [], docs: [], project: null, status, blocked: null, ...extra }
+  return { id, number: 1, title: `T${id}`, description: '', acceptance: [], constraints: [], after: [], docs: [], project: null, status, blocked: null, cancelled: null, ...extra }
 }
 
 function milestone(tickets: MapTicket[]): MapMilestoneInfo {

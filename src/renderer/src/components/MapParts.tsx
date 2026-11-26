@@ -55,6 +55,43 @@ export function ClampedText({ lines, className, children, onDoubleClick }: { lin
   )
 }
 
+/** Cancels a ticket with an optional reason: Enter or the button confirms, Escape or Keep it backs out. */
+export function CancelTicketForm({ title, onCancel, onClose }: { title: string; onCancel: (reason: string) => void; onClose: () => void }): React.JSX.Element {
+  const [reason, setReason] = useState('')
+  return (
+    <form
+      className="map-cancel-form"
+      onSubmit={(e) => {
+        e.preventDefault()
+        onCancel(reason.trim())
+        onClose()
+      }}
+    >
+      <span className="map-cancel-title">Cancel “{title}”</span>
+      <input
+        autoFocus
+        className="map-select-field"
+        value={reason}
+        placeholder="Why? (optional)"
+        onChange={(e) => setReason(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key !== 'Escape') return
+          e.stopPropagation()
+          onClose()
+        }}
+      />
+      <span className="map-cancel-actions">
+        <button type="button" className="map-link" onClick={onClose}>
+          Keep it
+        </button>
+        <button type="submit" className="map-button">
+          Cancel ticket
+        </button>
+      </span>
+    </form>
+  )
+}
+
 /** An on/off option: a switch with its label beside it. */
 export function Switch({ checked, onChange, children, className }: { checked: boolean; onChange: (checked: boolean) => void; children: React.ReactNode; className?: string }): React.JSX.Element {
   return (

@@ -717,7 +717,7 @@ ipcMain.handle(Channel.editMapTracker, async (_e, docsRoot: unknown, id: unknown
 )
 ipcMain.handle(Channel.removeFromTracker, async (_e, docsRoot: unknown, id: unknown, target: unknown) =>
   (await docsMaps(docsRoot)).removeFromTracker(mapId(id), trackerTarget(target), async (question) => {
-    const choice = await dialog.showMessageBox({ type: 'warning', buttons: ['Remove', 'Cancel'], defaultId: 1, cancelId: 1, message: question })
+    const choice = await dialog.showMessageBox({ type: 'warning', buttons: ['Delete', 'Cancel'], defaultId: 1, cancelId: 1, message: question })
     return choice.response === 0
   })
 )

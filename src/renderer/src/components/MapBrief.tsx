@@ -19,7 +19,7 @@ export interface BriefStart extends BriefChoice {
   ticket: MapTicket
 }
 
-const READY_TONE: Record<ReturnType<typeof workState>['status'], Tone> = { ready: 'done', 'in-progress': 'info', blocked: 'you', 'in-review': 'done', done: 'done' }
+const READY_TONE: Record<ReturnType<typeof workState>['status'], Tone> = { ready: 'done', 'in-progress': 'info', blocked: 'you', 'in-review': 'done', done: 'done', cancelled: 'muted' }
 
 const MODES: readonly LaunchMode[] = ['ticket', 'milestone']
 

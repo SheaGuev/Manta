@@ -32,6 +32,7 @@ import type {
   TicketStatus,
   TrackerEdit
 } from '../shared/ipc'
+import { isClosed } from '../shared/ipc'
 import type { ThreadAgent } from './agent/threadAgent'
 import { proposeDocChangeTool, reviseDocChangeTool, withdrawDocChangeTool } from './implementations'
 import { boardRows, boardText, signalOf, type BoardRow } from '../shared/mapBoard'
@@ -639,7 +640,7 @@ export class MapLaunches {
     if (!session) return result
     const held = decision.blocks.flatMap((id) => {
       const found = findTicket(tracker, id)
-      return found && found.ticket.status !== 'done' ? [`“${found.ticket.title}”`] : []
+      return found && !isClosed(found.ticket.status) ? [`“${found.ticket.title}”`] : []
     })
     const message = [
       `The user decided decision ${decisionNumber(decision)} “${decision.title}”, which you raised:`,
@@ -769,7 +770,7 @@ export class MapLaunches {
       },
       unblocks: (launch, ticket) => {
         const ids = scope(launch, ticket)
-        return tickets.filter((t) => t.status !== 'done' && t.after.some((a) => ids.includes(a))).length
+        return tickets.filter((t) => !isClosed(t.status) && t.after.some((a) => ids.includes(a))).length
       }
     })
   }

@@ -3,7 +3,7 @@ import type { MapDecision, MapDetail, MapLaunch, MapTicket, TerminalInfo } from 
 import { agentActivity, authorLabel, isReady, milestoneKey, ticketKey, workState } from '../mapStatus'
 
 function ticket(id: string, number: number, status: MapTicket['status'] = 'todo', extra: Partial<MapTicket> = {}): MapTicket {
-  return { id, number, title: `T${id}`, description: '', acceptance: [], constraints: [], after: [], docs: [], project: null, status, blocked: null, ...extra }
+  return { id, number, title: `T${id}`, description: '', acceptance: [], constraints: [], after: [], docs: [], project: null, status, blocked: null, cancelled: null, ...extra }
 }
 
 function decision(blocks: string[], status: MapDecision['status'] = 'open'): MapDecision {

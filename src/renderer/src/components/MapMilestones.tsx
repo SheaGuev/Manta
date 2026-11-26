@@ -1,13 +1,14 @@
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Check, Circle, CircleCheck, ClipboardCheck, CircleDot, ExternalLink, MoreHorizontal, MoveRight, Pencil, Pin, Play, Plus, Rocket, Trash2, X } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, Ban, Check, Circle, CircleCheck, ClipboardCheck, CircleDot, ExternalLink, MoreHorizontal, MoveRight, Pencil, Pin, Play, Plus, Rocket, Trash2, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import type { DoneItem, MapDetail, MapMilestoneInfo, MapTicket, MilestoneStatus, TicketStatus } from '../../../shared/ipc'
+import { isClosed, ticketProgress } from '../../../shared/ipc'
 import { hasWork } from '../lib/mapReview'
 import { independentTickets, matchesFilter, needsYou, stripMarks, ticketMeta, type StripMark, type TicketFilter } from '../lib/mapMilestones'
 import { ACTIVITY_LABEL, agentActivity, milestoneKey, ticketKey, WORK_LABEL, workState, type AgentActivity, type WorkStatus } from '../lib/mapStatus'
 import { currentOf, STATUS_LABEL } from '../lib/mapUpNext'
 import { ContextMenu, type MenuItem } from './ContextMenu'
 import { Chip, type Tone } from './MapOverview'
-import { ClampedText, StatusDot } from './MapParts'
+import { CancelTicketForm, ClampedText, StatusDot } from './MapParts'
 import { AgentsCard } from './MapAgents'
 import type { MapActions } from './MapView'
 
@@ -20,7 +21,7 @@ const FILTERS: readonly { filter: TicketFilter; label: string }[] = [
   { filter: 'ready', label: 'Ready' }
 ]
 
-const WORK_TONE: Record<WorkStatus, Tone> = { ready: 'muted', 'in-progress': 'info', blocked: 'muted', 'in-review': 'done', done: 'done' }
+const WORK_TONE: Record<WorkStatus, Tone> = { ready: 'muted', 'in-progress': 'info', blocked: 'muted', 'in-review': 'done', done: 'done', cancelled: 'muted' }
 
 const MARK_LABEL: Record<NonNullable<StripMark>, string> = { done: 'Done', current: 'Current', next: 'Next' }
 
@@ -50,6 +51,7 @@ export function MapMilestones(props: { map: MapDetail; actions: MapActions; busy
   const [menu, setMenu] = useState<Menu | null>(null)
   const [input, setInput] = useState<Input | null>(null)
   const [text, setText] = useState('')
+  const [cancelling, setCancelling] = useState<MapTicket | null>(null)
   const marks = stripMarks(map, current?.id ?? null)
   const strip = useRef<HTMLElement>(null)
   const milestoneId = milestone?.id ?? null
@@ -130,7 +132,7 @@ export function MapMilestones(props: { map: MapDetail; actions: MapActions; busy
       ...MILESTONE_STATUSES.map((status) => ({ label: `Mark ${STATUS_LABEL[status]}`, icon: <StatusDot status={status} />, onSelect: () => void actions.edit({ kind: 'set-milestone-status', milestone: target.id, status }) })),
       ...(target.manual ? [{ label: 'Status from its work', icon: <CircleDot size={14} />, onSelect: () => void actions.edit({ kind: 'set-milestone-status', milestone: target.id, status: null }) }] : []),
       { label: 'Start milestone', icon: <Rocket size={14} />, onSelect: () => actions.launch({ milestone: target.id }, target.title, event) },
-      { label: 'Remove…', icon: <Trash2 size={14} />, onSelect: () => actions.remove({ milestone: target.id }) }
+      { label: 'Delete…', icon: <Trash2 size={14} />, onSelect: () => void actions.remove({ milestone: target.id }) }
     ])
   }
 
@@ -146,7 +148,8 @@ export function MapMilestones(props: { map: MapDetail; actions: MapActions; busy
       ...map.milestones
         .filter((m) => m.id !== owner.id)
         .map((m) => ({ label: `Move to ${milestoneKey(map, m)} ${m.title}`, icon: <MoveRight size={14} />, onSelect: () => void actions.edit({ kind: 'move-ticket', ticket: ticket.id, milestone: m.id, before: null }) })),
-      { label: 'Remove…', icon: <Trash2 size={14} />, onSelect: () => actions.remove({ ticket: ticket.id }) }
+      ...(ticket.status === 'cancelled' ? [] : [{ label: 'Cancel…', icon: <Ban size={14} />, onSelect: () => setCancelling(ticket) }]),
+      { label: 'Delete…', icon: <Trash2 size={14} />, onSelect: () => void actions.remove({ ticket: ticket.id }) }
     ])
   }
 
@@ -184,8 +187,10 @@ export function MapMilestones(props: { map: MapDetail; actions: MapActions; busy
 
   const tickets = milestone.tickets
   const done = tickets.filter((t) => t.status === 'done')
+  const cancelled = tickets.filter((t) => t.status === 'cancelled')
+  const progress = ticketProgress(tickets)
   const counts = new Map(FILTERS.map(({ filter: f }) => [f, tickets.filter((t) => matchesFilter(map, t, f, actions.terminals)).length]))
-  const shown = tickets.filter((t) => matchesFilter(map, t, filter, actions.terminals) || (showDone && t.status === 'done'))
+  const shown = tickets.filter((t) => matchesFilter(map, t, filter, actions.terminals) || (showDone && isClosed(t.status)))
   const picked = tickets.filter((t) => selected.includes(t.id))
   const mark = marks.get(milestone.id) ?? null
   const toggle = (id: string): void => setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]))
@@ -250,11 +255,11 @@ export function MapMilestones(props: { map: MapDetail; actions: MapActions; busy
               </button>
             )}
           </div>
-          {tickets.length > 0 && (
+          {progress.total > 0 && (
             <div className="map-ms-progress">
-              <span>{`${done.length} of ${tickets.length} done`}</span>
+              <span>{`${progress.done} of ${progress.total} done`}</span>
               <div className="map-ov-progress">
-                <span style={{ width: `${Math.round((done.length / tickets.length) * 100)}%` }} />
+                <span style={{ width: `${Math.round((progress.done / progress.total) * 100)}%` }} />
               </div>
             </div>
           )}
@@ -293,6 +298,13 @@ export function MapMilestones(props: { map: MapDetail; actions: MapActions; busy
                 <span>Agent activity</span>
                 <span />
               </div>
+              {cancelling && (
+                <CancelTicketForm
+                  title={cancelling.title}
+                  onCancel={(reason) => void actions.edit({ kind: 'set-ticket-status', ticket: cancelling.id, status: 'cancelled', reason })}
+                  onClose={() => setCancelling(null)}
+                />
+              )}
               {shown.map((ticket) => (
                 <TicketRow
                   key={ticket.id}
@@ -321,15 +333,15 @@ export function MapMilestones(props: { map: MapDetail; actions: MapActions; busy
             <ReadyCard map={map} milestone={milestone} actions={actions} busy={busy} />
             <AgentsCard map={map} actions={actions} busy={busy} />
             <DefinitionOfDone milestone={milestone} actions={actions} />
-            {done.length > 0 && (
+            {done.length + cancelled.length > 0 && (
               <section className="map-card map-ov-side-card">
                 <span className="map-ms-done-title">
-                  <Check size={13} /> {done.length} {done.length === 1 ? 'ticket' : 'tickets'} done
+                  <Check size={13} /> {[...(done.length > 0 ? [`${done.length} ${done.length === 1 ? 'ticket' : 'tickets'} done`] : []), ...(cancelled.length > 0 ? [`${cancelled.length} cancelled`] : [])].join(' · ')}
                 </span>
                 <p className="map-ov-side-sub">Reviewed work is out of your way.</p>
                 <div className="map-ov-side-links">
                   <button className="map-link" onClick={() => setShowDone((v) => !v)}>
-                    {showDone ? 'Hide done tickets' : 'Show done tickets'} <ArrowRight size={11} />
+                    {`${showDone ? 'Hide' : 'Show'} ${cancelled.length > 0 ? 'closed' : 'done'} tickets`} <ArrowRight size={11} />
                   </button>
                 </div>
               </section>
@@ -365,7 +377,7 @@ function TicketRow(props: {
   const work = workState(map, ticket)
   const meta = ticketMeta(map, ticket)
   return (
-    <div className={`map-ms-row ${ticket.status === 'done' ? 'done' : ''} ${props.selected ? 'selected' : ''}`} role="button" tabIndex={0} onClick={props.onOpen} onKeyDown={(e) => e.key === 'Enter' && props.onOpen()} onContextMenu={props.onMenu}>
+    <div className={`map-ms-row ${isClosed(ticket.status) ? 'done' : ''} ${ticket.status === 'cancelled' ? 'cancelled' : ''} ${props.selected ? 'selected' : ''}`} role="button" tabIndex={0} onClick={props.onOpen} onKeyDown={(e) => e.key === 'Enter' && props.onOpen()} onContextMenu={props.onMenu}>
       {props.selecting && <input type="checkbox" className="map-select" checked={props.selected} onClick={(e) => e.stopPropagation()} onChange={props.onToggle} />}
       <span className="map-ms-ticket">
         <span className="map-ms-ticket-title">{ticket.title}</span>

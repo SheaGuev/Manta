@@ -9,7 +9,7 @@ function ev(id: string, kind: MapEvent['kind'], at: string, extra: Partial<MapEv
 }
 
 function ticket(id: string, status: MapTicket['status']): MapTicket {
-  return { id, number: 1, title: id, description: '', acceptance: [], constraints: [], after: [], docs: [], project: null, status, blocked: null }
+  return { id, number: 1, title: id, description: '', acceptance: [], constraints: [], after: [], docs: [], project: null, status, blocked: null, cancelled: null }
 }
 
 const milestones: MapMilestoneInfo[] = [{ id: 'ms_1', title: 'Release', description: '', doneWhen: [], tickets: [ticket('a', 'done'), ticket('b', 'blocked')], landed: false, manual: null, status: 'in-progress' }]

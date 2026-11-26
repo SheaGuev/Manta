@@ -1,6 +1,7 @@
 import { ArrowRight, ChevronDown, ChevronRight, Plus } from 'lucide-react'
 import { useState } from 'react'
 import type { MapDetail, MapMilestoneInfo, MapTicket } from '../../../shared/ipc'
+import { ticketProgress } from '../../../shared/ipc'
 import { attentionItems, decisionSummaries, docSummaries, overviewReview, recommendedNext, sinceLastVisit, type AttentionItem, type Recommendation } from '../lib/mapAttention'
 import { agentActivity, decisionNumber, milestoneKey, STAGE_LABEL, workState } from '../lib/mapStatus'
 import { currentOf, liveSessions } from '../lib/mapUpNext'
@@ -185,8 +186,7 @@ function ticketChip(map: MapDetail, ticket: MapTicket, terminals: MapActions['te
 }
 
 function CurrentMilestone({ map, milestone, actions }: { map: MapDetail; milestone: MapMilestoneInfo; actions: MapActions }): React.JSX.Element {
-  const done = milestone.tickets.filter((t) => t.status === 'done').length
-  const total = milestone.tickets.length
+  const { done, total } = ticketProgress(milestone.tickets)
   const moving = milestone.tickets.flatMap((ticket) => {
     const chip = ticketChip(map, ticket, actions.terminals)
     return chip ? [{ ticket, chip }] : []

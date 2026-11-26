@@ -6,7 +6,7 @@ import { EMPTY_TRACKER, type Tracker } from '../mapModel'
 const AT = '2026-11-24T10:00:00.000Z'
 
 function ticket(id: string, status: MapTicket['status'] = 'todo', blocked: string | null = null): MapTicket {
-  return { id, number: 1, title: `Ticket ${id}`, description: '', acceptance: [], constraints: [], after: [], docs: [], project: null, status, blocked }
+  return { id, number: 1, title: `Ticket ${id}`, description: '', acceptance: [], constraints: [], after: [], docs: [], project: null, status, blocked, cancelled: null }
 }
 
 function tracker(tickets: MapTicket[], decisions: MapDecision[] = []): Tracker {
@@ -84,5 +84,15 @@ describe('backfill and parsing', () => {
     expect(parseMapEvent({ id: 'ev_1', at: AT, kind: 'ticket-done', title: 'T' })).toMatchObject({ detail: '', ticket: null, thread: null })
     expect(parseMapEvent({ id: 'ev_1', at: AT, kind: 'ticket-accepted', title: 'T' })).toBeNull()
     expect(parseMapEvent('junk')).toBeNull()
+  })
+})
+
+describe('cancelled tickets in the log', () => {
+  it('logs a ticket cancelled with its reason; cancelling the last open ticket closes the milestone', () => {
+    const cancelled = { ...ticket('a', 'cancelled'), cancelled: 'Out of scope' }
+    expect(trackerEvents(tracker([ticket('a'), ticket('b', 'done')]), tracker([cancelled, ticket('b', 'done')]), [], AT).map((e) => [e.kind, e.title, e.detail])).toEqual([
+      ['ticket-cancelled', 'Ticket a', 'Out of scope'],
+      ['milestone-done', 'Release', '']
+    ])
   })
 })
