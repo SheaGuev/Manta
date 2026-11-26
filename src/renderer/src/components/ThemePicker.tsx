@@ -1,7 +1,7 @@
-import { Check, Loader2, Palette } from 'lucide-react'
+import { Check, ExternalLink, Loader2, Palette } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import type { EditorTheme, OpResult, ThemeEntry } from '../../../shared/ipc'
-import { applyEditorTheme } from '../lib/editorTheme'
+import { applyEditorTheme, BUILTIN_THEMES } from '../lib/editorTheme'
 import { withoutIpcPrefix } from '../lib/errors'
 
 const api = window.manta
@@ -15,7 +15,7 @@ interface ThemePickerProps {
 
 const message = (e: unknown): string => withoutIpcPrefix(e instanceof Error ? e.message : String(e))
 
-/** VS Code colour themes from Open VSX, for the code editor; the app's own colours stay. */
+/** Manta's built-in themes, which restyle the whole app, and VS Code colour themes from Open VSX, for the code editor only. */
 export function ThemePicker({ query, onResult }: ThemePickerProps): React.JSX.Element {
   const [themes, setThemes] = useState<ThemeEntry[] | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -47,7 +47,7 @@ export function ThemePicker({ query, onResult }: ThemePickerProps): React.JSX.El
     setCurrent(theme)
     setVariants(null)
     api.setEditorTheme(theme).then(
-      () => onResult({ ok: true, message: theme ? `Code editor theme: ${theme.name}` : "Code editor theme: Manta's own" }),
+      () => onResult({ ok: true, message: theme ? `${theme.app ? 'Theme' : 'Code editor theme'}: ${theme.name}` : "Theme: Manta's own" }),
       (e: unknown) => onResult({ ok: false, message: message(e) })
     )
   }
@@ -72,7 +72,7 @@ export function ThemePicker({ query, onResult }: ThemePickerProps): React.JSX.El
           <div className="plugin-title">
             <Palette size={14} />
             <span className="plugin-name">{current ? current.name : "Manta's own colours"}</span>
-            <span className="plugin-version">code editor theme</span>
+            <span className="plugin-version">{current?.app ? 'app theme' : 'code editor theme'}</span>
           </div>
         </div>
         <div className="plugin-actions">
@@ -83,6 +83,32 @@ export function ThemePicker({ query, onResult }: ThemePickerProps): React.JSX.El
           )}
         </div>
       </div>
+      {!query.trim() && <p className="muted-row plugins-message">Built in</p>}
+      {BUILTIN_THEMES.filter(({ theme }) => theme.name.toLowerCase().includes(query.trim().toLowerCase())).map(({ theme, description, credit, homepage }) => (
+        <div key={theme.name} className="plugin-row" data-theme={`builtin:${theme.app ?? theme.name}`}>
+          <div className="plugin-main">
+            <div className="plugin-title">
+              <span className="plugin-name">{theme.name}</span>
+              <span className="badge">Built in</span>
+              <span className="plugin-version">{credit}</span>
+              <a className="icon-button" title={homepage} href={homepage} target="_blank" rel="noreferrer">
+                <ExternalLink size={12} />
+              </a>
+            </div>
+            <p className="plugin-description">{description}</p>
+          </div>
+          <div className="plugin-actions">
+            {current?.app === theme.app ? (
+              <Check size={14} className="plugin-installed" />
+            ) : (
+              <button className="primary-button" onClick={() => use(theme)}>
+                Use
+              </button>
+            )}
+          </div>
+        </div>
+      ))}
+      {!query.trim() && <p className="muted-row plugins-message">From Open VSX: code editor only</p>}
       {error ? (
         <p className="dialog-error plugins-message">{error}</p>
       ) : !themes ? (

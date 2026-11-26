@@ -6,6 +6,7 @@ import '@xterm/xterm/css/xterm.css'
 import { FileText, Map as MapIcon, RotateCcw } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import type { MapLink, TerminalInfo, TerminalLink } from '../../../shared/ipc'
+import { onThemeChange } from '../lib/editorTheme'
 import { onTerminalOutput } from '../lib/terminalData'
 import { cellSize, fitSize } from '../lib/terminalFit'
 import { editKey } from '../lib/terminalKeys'
@@ -98,13 +99,33 @@ function cssVar(name: string): string {
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
 }
 
+const ANSI_COLORS = [
+  ['black', 'brightBlack'],
+  ['red', 'brightRed'],
+  ['green', 'brightGreen'],
+  ['yellow', 'brightYellow'],
+  ['blue', 'brightBlue'],
+  ['magenta', 'brightMagenta'],
+  ['cyan', 'brightCyan'],
+  ['white', 'brightWhite']
+] as const
+
+/** The app's colours, or a built-in theme's `--term-*` palette; ANSI colours left unset keep xterm's. */
 function theme(): ITheme {
+  const ansi: ITheme = {}
+  for (const [normal, bright] of ANSI_COLORS) {
+    const normalColor = cssVar(`--term-${normal}`)
+    const brightColor = cssVar(`--term-bright-${normal}`)
+    if (normalColor) ansi[normal] = normalColor
+    if (brightColor) ansi[bright] = brightColor
+  }
   return {
-    background: cssVar('--bg'),
-    foreground: cssVar('--text'),
-    cursor: cssVar('--accent'),
-    cursorAccent: cssVar('--bg'),
-    selectionBackground: cssVar('--bg-active')
+    ...ansi,
+    background: cssVar('--term-bg') || cssVar('--bg'),
+    foreground: cssVar('--term-fg') || cssVar('--text'),
+    cursor: cssVar('--term-cursor') || cssVar('--accent'),
+    cursorAccent: cssVar('--term-cursor-accent') || cssVar('--bg'),
+    selectionBackground: cssVar('--term-selection') || cssVar('--bg-active')
   }
 }
 
@@ -188,7 +209,11 @@ export function TerminalView({ info, visible, onError, onOpenLink, onOpenMap, on
     const pixelRatio = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`)
     const onPixelRatio = (): void => refit(mounted, element)
     pixelRatio.addEventListener('change', onPixelRatio)
+    const stopTheme = onThemeChange(() => {
+      term.options.theme = theme()
+    })
     return () => {
+      stopTheme()
       pixelRatio.removeEventListener('change', onPixelRatio)
       observer.disconnect()
       stopData()

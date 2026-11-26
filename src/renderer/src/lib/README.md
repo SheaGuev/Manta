@@ -18,7 +18,7 @@ Renderer logic kept out of components so it can be unit-tested: hooks, CodeMirro
 | `livePreview.ts` | CodeMirror extension: Obsidian-style live preview (hidden marks off the cursor line, rendered tables, frontmatter). |
 | `markdownTable.ts` | Parses a markdown table and its inline marks for `livePreview.ts`. |
 | `codeHighlight.ts` | Syntax colours for code files, from `--code-*` variables with Manta's palette as the fallback. |
-| `editorTheme.ts` | `applyEditorTheme`: sets or clears an editor theme's `--code-*` variables on the page. |
+| `editorTheme.ts` | `applyEditorTheme`: sets or clears an editor theme's `--code-*` variables and a built-in theme's `data-app-theme` on the page. `BUILTIN_THEMES` (Armada), `onThemeChange` for terminals. |
 | `overlayScrollbars.ts` | CodeMirror extension: hides the native scrollbars and draws thin thumbs over the editor that show while scrolling or when the pointer is near an edge, so they take no room. |
 | `editorBasics.ts` | CodeMirror extensions: `findInFile` (find and replace, for docs and code) and `codeEditing` (folding, brackets, Opt-click cursors, word completion, Ctrl+G go to line). |
 | `editorPeers.ts` | `joinPeers`: links the editors open on one file in this window, so a doc in a tab and on a map's Docs page see each other's typing (main doesn't send an editor's own updates back). |

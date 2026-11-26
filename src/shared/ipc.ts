@@ -978,11 +978,18 @@ export interface ThemeEntry {
   icon: string | null
 }
 
-/** A VS Code colour theme converted for the code editor: `--code-*` CSS variables. */
+/** Themes that ship with Manta and restyle the whole app; their colours live in the renderer's `style.css`. */
+export const APP_THEMES = ['armada'] as const
+export type AppThemeId = (typeof APP_THEMES)[number]
+
+export const isAppThemeId = (value: unknown): value is AppThemeId => APP_THEMES.some((id) => id === value)
+
+/** A VS Code colour theme converted for the code editor: `--code-*` CSS variables. `app` names a built-in theme that also restyles the app. */
 export interface EditorTheme {
   name: string
   dark: boolean
   vars: Record<string, string>
+  app?: AppThemeId
 }
 
 /** A server for a package without a recipe: its command and the languages it takes, given once by the user. */

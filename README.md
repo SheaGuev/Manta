@@ -123,7 +123,7 @@ The worktree editor is CodeMirror over the same CRDT as docs, so threads, diffs 
 - **Editing:** find and replace (⌘F), multiple cursors, folding, go to line, bracket matching, and **⌘P** / **⌘K** quick open with fuzzy matching (`name:42` opens at a line).
 - **Language servers:** one per worktree and language, run in the main process. TypeScript and JavaScript are built in (TypeScript 7's native server): go to definition, hover types, errors as you type, completions, rename, references.
 - **Format on save:** ⌘S formats with the project's own Prettier, Biome or Ruff (else the language server), applied as minimal edits so thread anchors survive.
-- **Plugins:** the Plugins tab (from the **+** menu) installs language servers, linters and formatters from [Mason's registry](https://github.com/mason-org/mason-registry), and VS Code colour themes from [Open VSX](https://open-vsx.org). Plugins are declarative: nothing they ship runs inside Manta.
+- **Plugins:** the Plugins tab (from the **+** menu) installs language servers, linters and formatters from [Mason's registry](https://github.com/mason-org/mason-registry), VS Code colour themes from [Open VSX](https://open-vsx.org) for the code editor, and the built-in Armada theme for the whole app. Plugins are declarative: nothing they ship runs inside Manta.
 
 Deep dive: [docs/code-editor.md](docs/code-editor.md).
 

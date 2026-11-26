@@ -23,7 +23,7 @@ React components. Each talks to main through `window.manta` directly or through 
 | `FileTree.tsx` | Recursive file tree used by the right panel. |
 | `SearchResults.tsx` | File-name and content search results, grouped by file, with the query highlighted. |
 | `PluginsView.tsx` | The Plugins tab (from the + menu): Mason's packages by core set, installed, languages, linters and formatters; install, update, remove, servers on and off, a custom server for a package without a recipe, live install progress. |
-| `ThemePicker.tsx` | The Plugins view's Themes: Open VSX colour themes for the code editor, each variant, and back to Manta's own. |
+| `ThemePicker.tsx` | The Plugins view's Themes: built-in app themes (Armada), Open VSX colour themes for the code editor, each variant, and back to Manta's own. |
 | `QuickFixPicker.tsx` | Cmd+.: the language server's quick fixes and refactors for the cursor's line. |
 | `SymbolPicker.tsx` | Cmd+Shift+O: the code file's symbols from its language server, by a fuzzy match on the name. |
 | `QuickOpen.tsx` | Cmd+P: open a file in the context by a fuzzy match on its path (`name:42` opens at a line); recent files before anything is typed. |

@@ -8,7 +8,7 @@ Plugins for the code editor: language servers, linters and formatters installed 
 | `recipes.ts` | `RECIPES`: how to run each server in the core set (command, languages, primary or lint, the project config a linter needs, settings for `workspace/configuration`, server-specific requests), written from nvim-lspconfig's specs. |
 | `installer.ts` | `installPackage`: npm (`--ignore-scripts`), PyPI (a virtualenv, with `uv` when present), GitHub release assets and other downloads (tar, zip, gz, raw), cargo and go. Installs in place and puts the previous install back if anything fails. |
 | `masonRegistry.ts` | Mason's `registry.json`: `parseRegistry`, `parsePurl`, `platformTargets`, `renderTemplate` (`{{ version \| strip_prefix "v" }}`), and `installPlan`, how to install a package on this machine or why it can't be. |
-| `themes.ts` | Open VSX search and download (`searchThemes`, `themeVariants`), `convertTheme` (a VS Code theme's colours and TextMate token scopes to `--code-*` variables), `parseJsonc`, `parseEditorTheme` (only `--code-*` variables). |
+| `themes.ts` | Open VSX search and download (`searchThemes`, `themeVariants`), `convertTheme` (a VS Code theme's colours and TextMate token scopes to `--code-*` variables), `parseJsonc`, `parseEditorTheme` (only `--code-*` variables, plus a built-in app theme id). |
 | `zip.ts` | `readZip`: stored and deflated entries, for the registry and `.vsix` files. Release assets with executables are unpacked with the system's `unzip`, which keeps file modes. |
 
 **Imports:** `../lsp/serverCatalog.ts` (types), `../terminal/terminalEnv.ts` (`findOnPath`), `../../shared/`.
