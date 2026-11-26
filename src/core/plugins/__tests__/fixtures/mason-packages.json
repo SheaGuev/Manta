@@ -1,0 +1,549 @@
+[
+ {
+  "name": "pyright",
+  "description": "Static type checker for Python.",
+  "homepage": "https://github.com/microsoft/pyright",
+  "languages": [
+   "Python"
+  ],
+  "categories": [
+   "LSP"
+  ],
+  "source": {
+   "id": "pkg:npm/pyright@1.1.414"
+  },
+  "bin": {
+   "pyright": "npm:pyright",
+   "pyright-langserver": "npm:pyright-langserver"
+  }
+ },
+ {
+  "name": "ruff",
+  "description": "An extremely fast Python linter and code formatter, written ",
+  "homepage": "https://github.com/astral-sh/ruff/",
+  "languages": [
+   "Python"
+  ],
+  "categories": [
+   "Linter",
+   "Formatter",
+   "LSP"
+  ],
+  "source": {
+   "id": "pkg:github/astral-sh/ruff@0.17.2",
+   "asset": [
+    {
+     "target": "darwin_x64",
+     "file": "ruff-x86_64-apple-darwin.tar.gz",
+     "bin": "ruff-x86_64-apple-darwin/ruff"
+    },
+    {
+     "target": "darwin_arm64",
+     "file": "ruff-aarch64-apple-darwin.tar.gz",
+     "bin": "ruff-aarch64-apple-darwin/ruff"
+    },
+    {
+     "target": "linux_x64",
+     "file": "ruff-x86_64-unknown-linux-musl.tar.gz",
+     "bin": "ruff-x86_64-unknown-linux-musl/ruff"
+    },
+    {
+     "target": "linux_arm64",
+     "file": "ruff-aarch64-unknown-linux-gnu.tar.gz",
+     "bin": "ruff-aarch64-unknown-linux-gnu/ruff"
+    },
+    {
+     "target": "linux_x64_musl",
+     "file": "ruff-x86_64-unknown-linux-musl.tar.gz",
+     "bin": "ruff-x86_64-unknown-linux-musl/ruff"
+    },
+    {
+     "target": "linux_arm64_musl",
+     "file": "ruff-aarch64-unknown-linux-musl.tar.gz",
+     "bin": "ruff-aarch64-unknown-linux-musl/ruff"
+    },
+    {
+     "target": "linux_x86",
+     "file": "ruff-i686-unknown-linux-gnu.tar.gz",
+     "bin": "ruff-i686-unknown-linux-gnu/ruff"
+    },
+    {
+     "target": "linux_armv7_gnu",
+     "file": "ruff-armv7-unknown-linux-gnueabihf.tar.gz",
+     "bin": "ruff-armv7-unknown-linux-gnueabihf/ruff"
+    },
+    {
+     "target": "win_x64",
+     "file": "ruff-x86_64-pc-windows-msvc.zip",
+     "bin": "ruff.exe"
+    },
+    {
+     "target": "win_arm64",
+     "file": "ruff-aarch64-pc-windows-msvc.zip",
+     "bin": "ruff.exe"
+    },
+    {
+     "target": "win_x86",
+     "file": "ruff-i686-pc-windows-msvc.zip",
+     "bin": "ruff.exe"
+    }
+   ]
+  },
+  "bin": {
+   "ruff": "{{source.asset.bin}}"
+  }
+ },
+ {
+  "name": "terraform-ls",
+  "description": "Terraform Language Server.",
+  "homepage": "https://github.com/hashicorp/terraform-ls",
+  "languages": [
+   "Terraform"
+  ],
+  "categories": [
+   "LSP"
+  ],
+  "source": {
+   "id": "pkg:generic/hashicorp/terraform-ls@v0.39.0",
+   "download": [
+    {
+     "target": "darwin_arm64",
+     "files": {
+      "terraform-ls.zip": "https://releases.hashicorp.com/terraform-ls/{{ version | strip_prefix \"v\" }}/terraform-ls_{{ version | strip_prefix \"v\" }}_darwin_arm64.zip"
+     },
+     "bin": "terraform-ls"
+    },
+    {
+     "target": "darwin_x64",
+     "files": {
+      "terraform-ls.zip": "https://releases.hashicorp.com/terraform-ls/{{ version | strip_prefix \"v\" }}/terraform-ls_{{ version | strip_prefix \"v\" }}_darwin_amd64.zip"
+     },
+     "bin": "terraform-ls"
+    },
+    {
+     "target": "linux_arm64",
+     "files": {
+      "terraform-ls.zip": "https://releases.hashicorp.com/terraform-ls/{{ version | strip_prefix \"v\" }}/terraform-ls_{{ version | strip_prefix \"v\" }}_linux_arm64.zip"
+     },
+     "bin": "terraform-ls"
+    },
+    {
+     "target": "linux_arm",
+     "files": {
+      "terraform-ls.zip": "https://releases.hashicorp.com/terraform-ls/{{ version | strip_prefix \"v\" }}/terraform-ls_{{ version | strip_prefix \"v\" }}_linux_arm.zip"
+     },
+     "bin": "terraform-ls"
+    },
+    {
+     "target": "linux_x64",
+     "files": {
+      "terraform-ls.zip": "https://releases.hashicorp.com/terraform-ls/{{ version | strip_prefix \"v\" }}/terraform-ls_{{ version | strip_prefix \"v\" }}_linux_amd64.zip"
+     },
+     "bin": "terraform-ls"
+    },
+    {
+     "target": "linux_x86",
+     "files": {
+      "terraform-ls.zip": "https://releases.hashicorp.com/terraform-ls/{{ version | strip_prefix \"v\" }}/terraform-ls_{{ version | strip_prefix \"v\" }}_linux_386.zip"
+     },
+     "bin": "terraform-ls"
+    },
+    {
+     "target": "win_x64",
+     "files": {
+      "terraform-ls.zip": "https://releases.hashicorp.com/terraform-ls/{{ version | strip_prefix \"v\" }}/terraform-ls_{{ version | strip_prefix \"v\" }}_windows_amd64.zip"
+     },
+     "bin": "terraform-ls.exe"
+    },
+    {
+     "target": "win_x86",
+     "files": {
+      "terraform-ls.zip": "https://releases.hashicorp.com/terraform-ls/{{ version | strip_prefix \"v\" }}/terraform-ls_{{ version | strip_prefix \"v\" }}_windows_386.zip"
+     },
+     "bin": "terraform-ls.exe"
+    },
+    {
+     "target": "win_arm64",
+     "files": {
+      "terraform-ls.zip": "https://releases.hashicorp.com/terraform-ls/{{ version | strip_prefix \"v\" }}/terraform-ls_{{ version | strip_prefix \"v\" }}_windows_arm64.zip"
+     },
+     "bin": "terraform-ls.exe"
+    }
+   ]
+  },
+  "bin": {
+   "terraform-ls": "{{source.download.bin}}"
+  }
+ },
+ {
+  "name": "buf",
+  "description": "The Buf CLI is a one stop shop for your local Protocol Buffe",
+  "homepage": "https://buf.build",
+  "languages": [
+   "Protobuf"
+  ],
+  "categories": [
+   "Linter",
+   "Formatter",
+   "LSP"
+  ],
+  "source": {
+   "id": "pkg:github/bufbuild/buf@v1.75.0",
+   "asset": [
+    {
+     "target": "darwin_x64",
+     "file": "buf-Darwin-x86_64"
+    },
+    {
+     "target": "darwin_arm64",
+     "file": "buf-Darwin-arm64"
+    },
+    {
+     "target": "linux_x64",
+     "file": "buf-Linux-x86_64"
+    },
+    {
+     "target": "linux_arm64",
+     "file": "buf-Linux-aarch64"
+    },
+    {
+     "target": "win_x64",
+     "file": "buf-Windows-x86_64.exe"
+    },
+    {
+     "target": "win_arm64",
+     "file": "buf-Windows-arm64.exe"
+    }
+   ]
+  },
+  "bin": {
+   "buf": "{{source.asset.file}}"
+  }
+ },
+ {
+  "name": "biome",
+  "description": "Toolchain of the web. Successor to Rome.",
+  "homepage": "https://biomejs.dev",
+  "languages": [
+   "JSON",
+   "JavaScript",
+   "TypeScript"
+  ],
+  "categories": [
+   "LSP",
+   "Linter",
+   "Formatter"
+  ],
+  "source": {
+   "id": "pkg:npm/@biomejs/biome@2.6.2"
+  },
+  "bin": {
+   "biome": "npm:biome"
+  }
+ },
+ {
+  "name": "basedpyright",
+  "description": "Fork of the Pyright static type checker for Python, with ext",
+  "homepage": "https://detachhead.github.io/basedpyright",
+  "languages": [
+   "Python"
+  ],
+  "categories": [
+   "LSP"
+  ],
+  "source": {
+   "id": "pkg:pypi/basedpyright@1.40.2"
+  },
+  "bin": {
+   "basedpyright": "pypi:basedpyright",
+   "basedpyright-langserver": "pypi:basedpyright-langserver"
+  }
+ },
+ {
+  "name": "kotlin-lsp",
+  "description": "Kotlin Language Server and plugin for Visual Studio Code",
+  "homepage": "https://github.com/Kotlin/kotlin-lsp",
+  "languages": [
+   "Kotlin"
+  ],
+  "categories": [
+   "LSP"
+  ],
+  "source": {
+   "id": "pkg:generic/Kotlin/kotlin-lsp@kotlin-lsp/v263.7084.0",
+   "download": [
+    {
+     "target": "darwin_x64",
+     "files": {
+      "kotlin-lsp.zip": "https://download.jetbrains.com/language-server/kotlin-server/{{ version | strip_prefix \"kotlin-lsp/v\" }}/kotlin-server-{{ version | strip_prefix \"kotlin-lsp/v\" }}.sit"
+     },
+     "bin": "kotlin-server-{{ version | strip_prefix \"kotlin-lsp/v\" }}/bin/intellij-server"
+    },
+    {
+     "target": "darwin_arm64",
+     "files": {
+      "kotlin-lsp.zip": "https://download.jetbrains.com/language-server/kotlin-server/{{ version | strip_prefix \"kotlin-lsp/v\" }}/kotlin-server-{{ version | strip_prefix \"kotlin-lsp/v\" }}-aarch64.sit"
+     },
+     "bin": "kotlin-server-{{ version | strip_prefix \"kotlin-lsp/v\" }}/bin/intellij-server"
+    },
+    {
+     "target": "linux_x64",
+     "files": {
+      "kotlin-lsp.tar.gz": "https://download.jetbrains.com/language-server/kotlin-server/{{ version | strip_prefix \"kotlin-lsp/v\" }}/kotlin-server-{{ version | strip_prefix \"kotlin-lsp/v\" }}.tar.gz"
+     },
+     "bin": "kotlin-server-{{ version | strip_prefix \"kotlin-lsp/v\" }}/bin/intellij-server"
+    },
+    {
+     "target": "linux_arm64",
+     "files": {
+      "kotlin-lsp.tar.gz": "https://download.jetbrains.com/language-server/kotlin-server/{{ version | strip_prefix \"kotlin-lsp/v\" }}/kotlin-server-{{ version | strip_prefix \"kotlin-lsp/v\" }}-aarch64.tar.gz"
+     },
+     "bin": "kotlin-server-{{{ version | strip_prefix \"kotlin-lsp/v\" }}/bin/intellij-server"
+    },
+    {
+     "target": "win_x64",
+     "files": {
+      "kotlin-lsp.zip": "https://download.jetbrains.com/language-server/kotlin-server/{{ version | strip_prefix \"kotlin-lsp/v\" }}/kotlin-server-{{ version | strip_prefix \"kotlin-lsp/v\" }}.win.zip"
+     },
+     "bin": "bin/intellij-server.exe"
+    },
+    {
+     "target": "win_arm64",
+     "files": {
+      "kotlin-lsp.zip": "https://download.jetbrains.com/language-server/kotlin-server/{{ version | strip_prefix \"kotlin-lsp/v\" }}/kotlin-server-{{ version | strip_prefix \"kotlin-lsp/v\" }}-aarch64.win.zip"
+     },
+     "bin": "bin/intellij-server.exe"
+    }
+   ]
+  },
+  "bin": {
+   "intellij-server": "{{source.download.bin}}"
+  }
+ },
+ {
+  "name": "gopls",
+  "description": "gopls (pronounced \"Go please\") is the official Go language s",
+  "homepage": "https://pkg.go.dev/golang.org/x/tools/gopls",
+  "languages": [
+   "Go"
+  ],
+  "categories": [
+   "LSP"
+  ],
+  "source": {
+   "id": "pkg:golang/golang.org/x/tools/gopls@v0.23.0"
+  },
+  "bin": {
+   "gopls": "golang:gopls"
+  }
+ },
+ {
+  "name": "taplo",
+  "description": "A versatile, feature-rich TOML toolkit.",
+  "homepage": "https://taplo.tamasfe.dev/",
+  "languages": [
+   "TOML"
+  ],
+  "categories": [
+   "LSP",
+   "Formatter"
+  ],
+  "source": {
+   "id": "pkg:github/tamasfe/taplo@0.10.0",
+   "asset": [
+    {
+     "target": "darwin_arm64",
+     "file": "taplo-darwin-aarch64.gz",
+     "bin": "taplo-darwin-aarch64"
+    },
+    {
+     "target": "darwin_x64",
+     "file": "taplo-darwin-x86_64.gz",
+     "bin": "taplo-darwin-x86_64"
+    },
+    {
+     "target": "linux_x64",
+     "file": "taplo-linux-x86_64.gz",
+     "bin": "taplo-linux-x86_64"
+    },
+    {
+     "target": "linux_x86",
+     "file": "taplo-linux-x86.gz",
+     "bin": "taplo-linux-x86"
+    },
+    {
+     "target": "linux_arm64",
+     "file": "taplo-linux-aarch64.gz",
+     "bin": "taplo-linux-aarch64"
+    },
+    {
+     "target": "linux_armv7_gnu",
+     "file": "taplo-linux-armv7.gz",
+     "bin": "taplo-linux-armv7"
+    },
+    {
+     "target": "win_x64",
+     "file": "taplo-windows-x86_64.zip",
+     "bin": "taplo.exe"
+    },
+    {
+     "target": "win_x86",
+     "file": "taplo-windows-x86.zip",
+     "bin": "taplo.exe"
+    }
+   ]
+  },
+  "bin": {
+   "taplo": "{{source.asset.bin}}"
+  }
+ },
+ {
+  "name": "lua-language-server",
+  "description": "A language server that offers Lua language support - program",
+  "homepage": "https://github.com/LuaLS/lua-language-server",
+  "languages": [
+   "Lua"
+  ],
+  "categories": [
+   "LSP"
+  ],
+  "source": {
+   "id": "pkg:github/LuaLS/lua-language-server@3.19.2",
+   "asset": [
+    {
+     "target": "darwin_arm64",
+     "file": "lua-language-server-{{version}}-darwin-arm64.tar.gz:libexec/",
+     "bin": "exec:libexec/bin/lua-language-server"
+    },
+    {
+     "target": "darwin_x64",
+     "file": "lua-language-server-{{version}}-darwin-x64.tar.gz:libexec/",
+     "bin": "exec:libexec/bin/lua-language-server"
+    },
+    {
+     "target": "linux_arm64_gnu",
+     "file": "lua-language-server-{{version}}-linux-arm64.tar.gz:libexec/",
+     "bin": "exec:libexec/bin/lua-language-server"
+    },
+    {
+     "target": "linux_x64_gnu",
+     "file": "lua-language-server-{{version}}-linux-x64.tar.gz:libexec/",
+     "bin": "exec:libexec/bin/lua-language-server"
+    },
+    {
+     "target": "win_x64",
+     "file": "lua-language-server-{{version}}-win32-x64.zip",
+     "bin": "bin/lua-language-server.exe"
+    }
+   ],
+   "version_overrides": [
+    {
+     "constraint": "semver:<=3.15.0",
+     "id": "pkg:github/LuaLS/lua-language-server@3.19.2",
+     "asset": [
+      {
+       "target": "darwin_arm64",
+       "file": "lua-language-server-{{version}}-darwin-arm64.tar.gz:libexec/",
+       "bin": "exec:libexec/bin/lua-language-server"
+      },
+      {
+       "target": "darwin_x64",
+       "file": "lua-language-server-{{version}}-darwin-x64.tar.gz:libexec/",
+       "bin": "exec:libexec/bin/lua-language-server"
+      },
+      {
+       "target": "linux_arm64_gnu",
+       "file": "lua-language-server-{{version}}-linux-arm64.tar.gz:libexec/",
+       "bin": "exec:libexec/bin/lua-language-server"
+      },
+      {
+       "target": "linux_x64_gnu",
+       "file": "lua-language-server-{{version}}-linux-x64.tar.gz:libexec/",
+       "bin": "exec:libexec/bin/lua-language-server"
+      },
+      {
+       "target": "linux_x64_musl",
+       "file": "lua-language-server-{{version}}-linux-x64-musl.tar.gz:libexec/",
+       "bin": "exec:libexec/bin/lua-language-server"
+      },
+      {
+       "target": "win_x64",
+       "file": "lua-language-server-{{version}}-win32-x64.zip",
+       "bin": "bin/lua-language-server.exe"
+      }
+     ]
+    },
+    {
+     "constraint": "semver:<=3.8.3",
+     "id": "pkg:github/LuaLS/lua-language-server@3.8.3",
+     "asset": [
+      {
+       "target": "darwin_arm64",
+       "file": "lua-language-server-{{version}}-darwin-arm64.tar.gz:libexec/",
+       "bin": "exec:libexec/bin/lua-language-server"
+      },
+      {
+       "target": "darwin_x64",
+       "file": "lua-language-server-{{version}}-darwin-x64.tar.gz:libexec/",
+       "bin": "exec:libexec/bin/lua-language-server"
+      },
+      {
+       "target": "linux_x64_gnu",
+       "file": "lua-language-server-{{version}}-linux-x64.tar.gz:libexec/",
+       "bin": "exec:libexec/bin/lua-language-server"
+      },
+      {
+       "target": "linux_x64_musl",
+       "file": "lua-language-server-{{version}}-linux-x64-musl.tar.gz:libexec/",
+       "bin": "exec:libexec/bin/lua-language-server"
+      },
+      {
+       "target": "win_x64",
+       "file": "lua-language-server-{{version}}-win32-x64.zip",
+       "bin": "bin/lua-language-server.exe"
+      }
+     ]
+    },
+    {
+     "constraint": "semver:<=3.7.4",
+     "id": "pkg:github/LuaLS/lua-language-server@3.7.4",
+     "asset": [
+      {
+       "target": "darwin_arm64",
+       "file": "lua-language-server-{{version}}-darwin-arm64.tar.gz:libexec/",
+       "bin": "exec:libexec/bin/lua-language-server"
+      },
+      {
+       "target": "darwin_x64",
+       "file": "lua-language-server-{{version}}-darwin-x64.tar.gz:libexec/",
+       "bin": "exec:libexec/bin/lua-language-server"
+      },
+      {
+       "target": "linux_arm64_gnu",
+       "file": "lua-language-server-{{version}}-linux-arm64.tar.gz:libexec/",
+       "bin": "exec:libexec/bin/lua-language-server"
+      },
+      {
+       "target": "linux_x64_gnu",
+       "file": "lua-language-server-{{version}}-linux-x64.tar.gz:libexec/",
+       "bin": "exec:libexec/bin/lua-language-server"
+      },
+      {
+       "target": "linux_x64_musl",
+       "file": "lua-language-server-{{version}}-linux-x64-musl.tar.gz:libexec/",
+       "bin": "exec:libexec/bin/lua-language-server"
+      },
+      {
+       "target": "win_x64",
+       "file": "lua-language-server-{{version}}-win32-x64.zip",
+       "bin": "bin/lua-language-server.exe"
+      }
+     ]
+    }
+   ]
+  },
+  "bin": {
+   "lua-language-server": "{{source.asset.bin}}"
+  }
+ }
+]

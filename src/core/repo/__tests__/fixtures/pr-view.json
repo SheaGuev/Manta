@@ -1,0 +1,98 @@
+{
+  "id": "PR_kwDOAAAB",
+  "number": 7,
+  "title": "Add login",
+  "state": "OPEN",
+  "isDraft": false,
+  "url": "https://github.com/o/r/pull/7",
+  "baseRefName": "main",
+  "baseRefOid": "1111111111111111111111111111111111111111",
+  "headRefName": "feature/login",
+  "headRefOid": "2222222222222222222222222222222222222222",
+  "author": { "login": "alice", "name": "Alice", "is_bot": false },
+  "comments": [
+    {
+      "id": "IC_1",
+      "author": { "login": "carol" },
+      "authorAssociation": "MEMBER",
+      "body": "Can we split this PR?",
+      "createdAt": "2026-10-20T10:00:00Z",
+      "url": "https://github.com/o/r/pull/7#issuecomment-1"
+    },
+    {
+      "id": "IC_2",
+      "author": null,
+      "authorAssociation": "NONE",
+      "body": "Looks fine",
+      "createdAt": "2026-10-21T10:00:00Z",
+      "url": "https://github.com/o/r/pull/7#issuecomment-2"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "PRR_1",
+      "author": { "login": "dave" },
+      "authorAssociation": "MEMBER",
+      "body": "Needs tests",
+      "submittedAt": "2026-10-22T10:00:00Z",
+      "state": "CHANGES_REQUESTED",
+      "commit": { "oid": "2222222222222222222222222222222222222222" }
+    },
+    {
+      "id": "PRR_2",
+      "author": { "login": "erin" },
+      "authorAssociation": "MEMBER",
+      "body": "",
+      "submittedAt": "2026-10-22T11:00:00Z",
+      "state": "APPROVED",
+      "commit": { "oid": "2222222222222222222222222222222222222222" }
+    }
+  ],
+  "statusCheckRollup": [
+    {
+      "__typename": "CheckRun",
+      "name": "test",
+      "workflowName": "CI",
+      "status": "COMPLETED",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/o/r/actions/runs/1/job/1",
+      "startedAt": "2026-10-22T10:00:00Z",
+      "completedAt": "2026-10-22T10:05:00Z"
+    },
+    {
+      "__typename": "CheckRun",
+      "name": "lint",
+      "workflowName": "CI",
+      "status": "COMPLETED",
+      "conclusion": "FAILURE",
+      "detailsUrl": "https://github.com/o/r/actions/runs/1/job/2",
+      "startedAt": "2026-10-22T10:00:00Z",
+      "completedAt": "2026-10-22T10:01:00Z"
+    },
+    {
+      "__typename": "CheckRun",
+      "name": "build",
+      "workflowName": "CI",
+      "status": "IN_PROGRESS",
+      "conclusion": "",
+      "detailsUrl": "https://github.com/o/r/actions/runs/1/job/3",
+      "startedAt": "2026-10-22T10:00:00Z",
+      "completedAt": "0001-01-01T00:00:00Z"
+    },
+    {
+      "__typename": "StatusContext",
+      "context": "deploy/preview",
+      "state": "PENDING",
+      "targetUrl": "",
+      "startedAt": "2026-10-22T10:00:00Z"
+    },
+    {
+      "__typename": "CheckRun",
+      "name": "mystery",
+      "workflowName": "CI",
+      "status": "COMPLETED",
+      "conclusion": "SOMETHING_NEW",
+      "detailsUrl": "https://github.com/o/r/actions/runs/1/job/4"
+    }
+  ]
+}

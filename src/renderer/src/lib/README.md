@@ -1,0 +1,47 @@
+# renderer/src/lib
+
+Renderer logic kept out of components so it can be unit-tested: hooks, CodeMirror extensions, and pure helpers.
+
+| Entry | What it does |
+|---|---|
+| `lsp/` | The LSP client side of language servers: clients per root and server, the code editor extension, jumps to other files. |
+| `hooks.ts` | Data hooks over `window.manta` (`useFiles`, `useChanges`, `usePullRequest` (the PR tab: on open and focus, forced every 30 s while a check runs, one request at a time), `usePullRequestSent`, `useBranch`, `useWorktrees`, `useRepoStatus`, `useThreads`, `useTerminals`, `useLanguageServers`, `useMaps`, `useMapDetail` (one map, with its launches' pull requests and landing checked on open, focus and when a session rests), `useMapDocPaths` (the docs a map lists, for the Files tab)) and `localStorage`-backed state (`usePersistentWidth`, `usePersistentSet`, `usePersistentString`). |
+| `terminalData.ts` | `onTerminalOutput`: one terminal's output from main, through a single shared IPC listener that dispatches by terminal id. |
+| `terminalFit.ts` | `cellSize` and `fitSize`: the rows and columns that fit a terminal's box, from the cell size xterm draws with (its render state, not the drawn screen, which lags a resize made while hidden). |
+| `terminalKeys.ts` | `editKey`: what a terminal sends for an editing shortcut in place of xterm's encoding; Option+Delete is Ctrl+W (deletes a word in zsh's vi mode too), Cmd+Delete is Ctrl+U, Shift+Enter in a Claude session is a newline. |
+| `webglBudget.ts` | `HiddenWebglBudget`: which hidden terminals keep their WebGL context (6 at most), so many open terminals don't run out of Chromium's 16. |
+| `navHistory.ts` | Back and forward across the whole window: `recordVisit`, `step`, `canStep`, `prune` over a list of places and the current index. Pure and generic; `App.tsx` supplies the places. |
+| `tabOrder.ts` | `reorder`: a tab list with one tab dropped before or after another, for dragging tabs in the tab strip. |
+| `places.ts` | Whether a work context still exists (`contextExists`: its project, its worktree's project, or its map) and whether it belongs to a project being removed (`inProject`). Pure. |
+| `warmContexts.ts` | `touchWarm`: the contexts whose tab pages stay mounted while hidden, most recent first. |
+| `threadMarkers.ts` | CodeMirror extension: one right-margin marker per section with active threads and its popover (implementation threads square, with their branch), heading "+ thread" and "▸ implement". `threadStatusLabel`. Reads anchors from the doc's Yjs replica via `core/threads/threads.ts`. |
+| `livePreview.ts` | CodeMirror extension: Obsidian-style live preview (hidden marks off the cursor line, rendered tables, frontmatter). |
+| `markdownTable.ts` | Parses a markdown table and its inline marks for `livePreview.ts`. |
+| `codeHighlight.ts` | Syntax colours for code files, from `--code-*` variables with Manta's palette as the fallback. |
+| `editorTheme.ts` | `applyEditorTheme`: sets or clears an editor theme's `--code-*` variables on the page. |
+| `overlayScrollbars.ts` | CodeMirror extension: hides the native scrollbars and draws thin thumbs over the editor that show while scrolling or when the pointer is near an edge, so they take no room. |
+| `editorBasics.ts` | CodeMirror extensions: `findInFile` (find and replace, for docs and code) and `codeEditing` (folding, brackets, Opt-click cursors, word completion, Ctrl+G go to line). |
+| `editorPeers.ts` | `joinPeers`: links the editors open on one file in this window, so a doc in a tab and on a map's Docs page see each other's typing (main doesn't send an editor's own updates back). |
+| `search.ts` | File-name matching, grouping content matches by file, splitting text into highlighted parts; `fuzzyMatch` and `rankFiles` for quick open, `parseQuickOpen` for `name:line`. |
+| `tree.ts` | Builds the file tree from a flat path list; display names. |
+| `diffOverview.ts` | CodeMirror extension for unified merge views: a strip at the right edge with green and red marks over the scrollbar where lines were added and deleted (it ignores the pointer, so the scrollbar still works). `overviewMarks` is the pure part. |
+| `diffInsertions.ts` | CodeMirror extension for unified merge views: tags lines that were only added (`cm-insertedOnly`) so they show the green line background without the word-by-word highlight. |
+| `pullRequestView.ts` | The PR tab's pure helpers: `orderComments` (unresolved threads by file and line, then the conversation oldest first; resolved apart), `initiallyTicked`, `checkSummary` and `refreshInterval` (30 s only while a check runs). |
+| `reviewAnchors.ts` | Review comments in a unified merge view: `newLineAnchor` and `deletedRowAnchor` (a row of a deleted chunk, on the old side) give a line's anchor with its hunk, two rows of the unified diff either side; `placeComments` puts saved comments back at their line, or the nearest one when outdated; `placeThreads` places GitHub's threads (an old-side one on an unchanged line maps across); `inRanges` for commentable lines. Pure over the merge view's state. |
+| `commentGutter.ts` | CodeMirror extension for review comments in a unified merge view: a + in a gutter beside the hovered line or deleted row (rows of the deletion widget through `widgetMarker`), a comment box widget under it with the owner's actions (`BoxAction`s; a PR review has two), saved comments under their line (`setReviewComments`, "pending" for a PR review's), read-only GitHub threads (`setThreadNotes`), and `canComment` to keep the + off lines that can't take a comment. |
+| `agentTargets.ts` | The Claude sessions review comments can be sent to, the worktree's own first, then the most recently started; waiting and starting ones are listed but not sendable. |
+| `relativeDate.ts` | "5 min ago", "yesterday", then the date, for commit rows. |
+| `diffStats.ts` | Added/removed line counts, counted the way the merge view shows them; `changedLines` (the lines between what two texts share at their start and end, for a doc update preview). |
+| `mapBoard.ts` | The map's board rows (`mapBoardRows`), the Agents card's groups (`boardGroups`: rows from `shared/mapBoard.ts`, by batch, newest first, then the rest), a batch's coordinator state (`coordinatorState`) and how many rows need the user (`needsYou`). |
+| `mapUpNext.ts` | A map's Needs review queue (`needsReview`: also finished work without a pull request, and pull requests with failing checks or review comments) and the one Up next action each map screen leads with (`homeUpNext`, `ticketUpNext`; several ready tickets start in parallel), plus which session belongs to a ticket (`ticketSession`). Pure. |
+| `mapAttention.ts` | The Overview's content: `attentionItems` (open decisions and agents waiting, by the board's ranking and how many tickets each holds back; finished tickets, doc changes and suggestions to review; pull requests to fix or merge), `recommendedNext` (the first of those with why and who acts, else the plan's next step), `overviewReview` (what Needs review lists that the attention list doesn't act on), `sinceLastVisit`, `docSummaries`, `decisionSummaries` (open first, then the latest decided); three of each. Pure. |
+| `mapActivity.ts` | The Activity page's logic: filters by kind (`inFilter`), what still waits on the user (`needsAction`), the feed by day with alike events grouped (`feedDays`, `itemTitle`), Since your last visit (`sinceSummary`), and an event as a sentence (`eventSentence`). Pure. |
+| `mapDocs.ts` | The Docs page's logic: `splitDoc` (a doc at its `##` headings, outside code fences), `headingLine` (where a section's heading is, for the editor to reveal), `sectionLink`, `docCoverage` (Context coverage from the docs' roles), `roleFilters`, `docMatches`, `citingTickets`. Pure. |
+| `mapMilestones.ts` | The Milestones page's logic: table filters (`matchesFilter`, `needsYou`), the line under a ticket (`ticketMeta`: why it's held, checks attached, dependencies, its doc section), `independentTickets` (ready ones that can start together: no `after` between them, no shared doc section) and the strip's marks (`stripMarks`: done, current, next). Pure. |
+| `mapReview.ts` | The review page's view of a ticket (`ticketReview`): its launches and wrap-ups, the latest judgement of each criterion, checks, what wasn't verified, risks, its launches' waiting doc updates, and the stage (working, finished, PR open, merged, done) that decides the next step; `hasWork` (anything to review yet). Pure. |
+| `mapStatus.ts` | A ticket's work status apart from its agent's activity: `workState` (Ready, or Blocked with "Depends on OMN-81" or "Decision 006 required", else the stored status), `agentActivity` (not started, working, needs your answer, paused, finished), readiness (`isReady`, `waitingOn`, `openDecisions`), the launches of a ticket (`ticketLaunches`), what a launch works on (`launchTitle`), who raised something (`authorLabel`), and keys (`ticketKey`, `milestoneKey`, `decisionNumber`). Pure. |
+| `terminalStatus.ts` | Which Claude state a context's row shows (`rootState`, and `mostUrgent` for any set of terminals such as a map's sessions: waiting > working > starting > idle) and a terminal's state label. |
+| `errors.ts` | Strips Electron's IPC prefix from error messages before showing them. |
+| `externalLink.ts` | `externalLink`: where a link goes and whether main will open it (http, https, mailto), for `OpenLinkDialog`. |
+
+**Tests:** `__tests__/`, one file per helper.
