@@ -67,6 +67,11 @@ describe('parseEditorTheme', () => {
     expect(theme).toEqual({ name: 'T', dark: true, vars: { '--code-bg': '#000' } })
   })
 
+  it('keeps a built-in app theme id and drops any other', () => {
+    expect(parseEditorTheme({ name: 'Armada', dark: true, vars: {}, app: 'armada' })).toEqual({ name: 'Armada', dark: true, vars: {}, app: 'armada' })
+    expect(parseEditorTheme({ name: 'T', dark: true, vars: {}, app: 'evil' })).toEqual({ name: 'T', dark: true, vars: {} })
+  })
+
   it('is null for something that is not a theme', () => {
     expect(parseEditorTheme(null)).toBeNull()
     expect(parseEditorTheme({ name: 'x' })).toBeNull()

@@ -1,4 +1,4 @@
-import type { EditorTheme, ThemeEntry } from '../../shared/ipc'
+import { isAppThemeId, type EditorTheme, type ThemeEntry } from '../../shared/ipc'
 import { readZip } from './zip'
 
 const OPEN_VSX = 'https://open-vsx.org/api'
@@ -119,11 +119,15 @@ export function convertTheme({ name, json, dark }: { name: string; json: unknown
   return { name, dark: typeof theme.type === 'string' ? theme.type !== 'light' : dark, vars }
 }
 
-/** A stored or sent theme; null for anything else. Only `--code-*` variables, so a theme can't restyle the app. */
+/**
+ * A stored or sent theme; null for anything else. Only `--code-*` variables, so a downloaded theme can't
+ * restyle the app; `app` may only name one of Manta's built-in themes, whose colours are Manta's own CSS.
+ */
 export function parseEditorTheme(value: unknown): EditorTheme | null {
   if (!isRecord(value) || typeof value.name !== 'string' || !isRecord(value.vars)) return null
   const vars = Object.fromEntries(Object.entries(value.vars).filter((e): e is [string, string] => e[0].startsWith('--code-') && typeof e[1] === 'string' && !/[;{}<>]/.test(e[1])))
-  return { name: value.name, dark: value.dark !== false, vars }
+  const theme: EditorTheme = { name: value.name, dark: value.dark !== false, vars }
+  return isAppThemeId(value.app) ? { ...theme, app: value.app } : theme
 }
 
 /** Open VSX's colour themes matching `query`, most downloaded first. */

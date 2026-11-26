@@ -56,6 +56,77 @@
   }
 }
 
+/*
+ * Built-in app themes, picked in Plugins → Themes (lib/editorTheme.ts sets data-app-theme).
+ * The attribute selector outranks the light-mode :root above, so a dark theme stays dark.
+ *
+ * Armada: colours from Armada for Orca by David Septimus, MIT licensed,
+ * https://github.com/DavidSeptimus/armada-theme-orca-plugin
+ */
+:root[data-app-theme='armada'] {
+  --bg: #18191b;
+  --bg-sidebar: #090909;
+  --bg-raised: #1f2022;
+  --bg-hover: #252629;
+  --bg-active: #323438;
+  --bg-field: #252629;
+  --bg-chip: #323438;
+  --border: #2b2d30;
+  --text: #e0e1e4;
+  --text-muted: #9ea3a8;
+  --text-faint: #6e747b;
+  --accent: #4b8dec;
+  --accent-solid: #0870e4;
+  --green: #69b090;
+  --red: #f87c88;
+  --yellow: #cd984d;
+  --violet: #af9cff;
+
+  --code-bg: #18191b;
+  --code-fg: #e0e1e4;
+  --code-selection: #0870e480;
+  --code-line-highlight: #e0e1e40a;
+  --code-gutter: #6e747b;
+  --code-gutter-active: #e0e1e4;
+  --code-cursor: #e0e1e4;
+  --code-keyword: #82d2ce;
+  --code-keyword-style: normal;
+  --code-string: #e394dc;
+  --code-number: #ebc88d;
+  --code-comment: #909194;
+  --code-comment-style: normal;
+  --code-function: #ebc88d;
+  --code-type: #87c3ff;
+  --code-property: #e0e1e4;
+  --code-tag: #87c3ff;
+  --code-variable: #e0e1e4;
+  --code-link: #4b8dec;
+  --code-invalid: #ec5d6f;
+
+  --term-bg: #18191b;
+  --term-fg: #e0e1e4;
+  --term-cursor: #e0e1e4;
+  --term-cursor-accent: #252629;
+  --term-selection: #225090;
+  --term-black: #424242;
+  --term-bright-black: #595959;
+  --term-red: #eb4056;
+  --term-bright-red: #c7001b;
+  --term-green: #82d2ce;
+  --term-bright-green: #009e6f;
+  --term-yellow: #fad075;
+  --term-bright-yellow: #e09119;
+  --term-blue: #4b8dec;
+  --term-bright-blue: #0067e6;
+  --term-magenta: #eb83e2;
+  --term-bright-magenta: #eb4dde;
+  --term-cyan: #2ccce6;
+  --term-bright-cyan: #00bad6;
+  --term-white: #c3c5c9;
+  --term-bright-white: #ffffff;
+  color-scheme: dark;
+}
+
 * {
   box-sizing: border-box;
 }
